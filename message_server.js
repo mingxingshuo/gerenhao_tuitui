@@ -25,7 +25,7 @@ var MessageServer = function(server){
 	this.io = null;
 	this.sockets = {};
 	this.socket_ids = [];
-	this.user_socket_ids = [];
+	this.wechat_socket_ids = [];
 	this.init_io(server,this);
 }
 
@@ -47,29 +47,20 @@ MessageServer.prototype.init_io = function(server,self) {
 		    console.log('user disconnected');
 		    delete self.sockets[socket.id];
 		    self.socket_ids.splice(self.socket_ids.contains('c'),1)
-            self.user_socket_ids.splice(self.user_socket_ids.contains('c'),1)
+            self.wechat_socket_ids.splice(self.wechat_socket_ids.contains('c'),1)
         });
 
-		socket.on('openid',function (data) {
-			if(data.key == 1){
+		socket.on('registe',function (data) {
+			if(data.role == 'taobao'){
                 self.socket_ids.push(socket.id);
             }else{
-                self.user_socket_ids.push({openid:data.openid,socketid:socket.id});
+                self.wechat_socket_ids.push({openid:data.openid,socketid:socket.id});
             }
         })
 
 		socket.on('token',function(msg){
-			msg = msg.stripHTML();
+			// msg = msg.stripHTML();
 			msg = JSON.parse(msg);
-			
-			var str = '';
-			if(msg.data){
-				str ='【'+msg.data.title+'】\r\n ━┉┉┉┉∞┉┉┉┉━\r\n☞ 原价:'+msg.data.price+'元\r\n☞ 优惠:'+msg.data.couponAmount+'元\r\n'+
-				 '☞ 口令:'+msg.token+'\r\n☞ 返利 :'+ (0.2*msg.data.tkCommFee).toFixed(2) +'元 \r\n━┉┉┉┉∞┉┉┉┉━\r\n'+
-				'◇ ◇ ◇   下单步骤◇ ◇ ◇\r\n 1. 按复制本信息打开淘宝下单\r\n 2.下单后将订单号发送给我\r\n[须知]:商品可使淘币进抵扣或使用其他店铺优惠 \r\n━┉┉┉┉∞┉┉┉┉━';
-			}else{
-				str = '❋❋❋❋❋❋❋❋❋❋❋❋❋❋\r\n您查询的商品暂时没有优惠！\r\n❋❋❋❋❋❋❋❋❋❋❋❋❋❋';
-			}
 			
 			var message = new TokenMessageModel({
 				title : msg.data.title,
@@ -91,14 +82,14 @@ MessageServer.prototype.init_io = function(server,self) {
 				console.log('-------message id------------');
 				console.log(doc._id);
 				console.log('-----------------------------')
+				var str = "http://192.168.1.20:3000/piclink/find?id="+doc._id
+                wechat_socket_ids.forEach(function (item) {
+                    if(msg.openid == item.openid){
+                        var key = item.socketid;
+                        this.sockets[key].emit('str',str);
+                    }
+                })
 			});
-
-            user_socket_ids.forEach(function (item) {
-            	if(msg.openid == item.openid){
-                    var key = item.socketid;
-                    this.sockets[key].emit('str',str);
-                }
-            })
 
             // var config = weichat_conf[msg.code];
 			// if(!weichat_apis[config.code]){
