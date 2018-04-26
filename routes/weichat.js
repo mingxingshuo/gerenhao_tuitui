@@ -126,6 +126,28 @@ var memcached = new Memcached('127.0.0.1:11211');
 // 	}
 // });
 
+function getUserInfo(openid,code,callback) {
+    UserModel.findOneAndUpdate({openid:openid,code:code},{action_time:Date.now()},function(err,user) {
+        if(!user){
+            var user= {}
+            user.nickname = '';
+            user.openid = openid;
+            user.code = code;
+            user.current_balance = 0;
+            UserModel.create(user,function(error){
+            	if(error){
+            		console.log(error)
+					callback(false)
+                }else{
+            		callback(true)
+				}
+            });
+        }else{
+        	callback(false);
+        }
+    });
+}
+
 function getSearch(config,openid,text,res){
 	var key = text.substr(2,text.length).trim();
 	var url = 'http://mingxinggouwubao.m.zhifujiekou.vip/index/index/sort/8/all_hide/1/key/'+encodeURIComponent(key);
@@ -314,49 +336,63 @@ function getCode(openid,text,res){
 //待开发
 router.get('/cash', function(req, res) {
     var openid = req.query.openid;
+    var code = req.query.code;
 
-	UserModel.findOne({openid:openid},function(error,user){
-		if(!user){
-			res.send('err');
+    getUserInfo(openid,code,function(sign){
+    	if(sign){
+            UserModel.findOne({openid: openid}, function (error, user) {
+                if (!user) {
+                    res.send('err');
+                } else {
+                    var current_balance = user.current_balance;
+                    if (parseFloat(current_balance.toFixed(2)) < 1) {
+                        res.send({content: '您的余额为【' + current_balance.toFixed(2) + '】元，要达到【1.0】元才可以提现哦！'});
+                    } else {
+                        res.send('您的余额为【' + current_balance.toFixed(2) + '】元。提现功能正在玩命开发中，两周后和您见面');
+                    }
+                }
+            });
 		}else{
-            var current_balance=user.current_balance;
-            if(parseFloat(current_balance.toFixed(2))<1){
-                res.send({content:'您的余额为【'+current_balance.toFixed(2)+'】元，要达到【1.0】元才可以提现哦！'});
-            }else{
-                res.send('您的余额为【'+current_balance.toFixed(2)+'】元。提现功能正在玩命开发中，两周后和您见面');
-            }
+    		res.send('user error')
 		}
-	});
+	})
+
 })
 
-router.get('/cash', function(req, res) {
+router.get('/getUser', function(req, res) {
     var openid = req.query.openid;
+    var code = req.query.code;
 
-	UserModel.findOne({openid:openid},function(error,user){
-		if(user) {
-            if (!user.auction) {
-                var query = UserModel.find({
-                    $or: [
-                        {auction: {$ne: 0}},
-                        {auction: {$ne: null}},
-                    ]
-                }).sort({auction: -1}).limit(1);
-                query.exec(function (error, tmps) {
-                    if (tmps.length && tmps[0].auction > 10000) {
-                        user.auction = tmps[0].auction + 1;
+    getUserInfo(openid,code,function(sign){
+        if(sign){
+        	UserModel.findOne({openid:openid},function(error,user){
+                if(user) {
+                    if (!user.auction) {
+                        var query = UserModel.find({
+                            $or: [
+                                {auction: {$ne: 0}},
+                                {auction: {$ne: null}},
+                            ]
+                        }).sort({auction: -1}).limit(1);
+                        query.exec(function (error, tmps) {
+                            if (tmps.length && tmps[0].auction > 10000) {
+                                user.auction = tmps[0].auction + 1;
+                            } else {
+                                user.auction = 10000 + 1;
+                            }
+                            user.save();
+                        });
+                        sendUserMessage(openid, user, res);
                     } else {
-                        user.auction = 10000 + 1;
+                        sendUserMessage(openid, user, res);
                     }
-                    user.save();
-                });
-                sendUserMessage(openid, user, res);
-            } else {
-                sendUserMessage(openid, user, res);
-            }
+                }else{
+                    res.send('openid error')
+                }
+            });
         }else{
-			res.send('openid error')
-		}
-	});
+            res.send('user error')
+        }
 })
 
 function sendUserMessage(openid,user,res){
@@ -381,29 +417,36 @@ function sendUserMessage(openid,user,res){
 
 router.get('/getOrders', function(req, res) {
     var openid = req.query.openid;
-	async.parallel([
-	    //并行同时执行
-	    function(callback) {
-	        UserOrderModel.count({openid:openid,status:{$ne:0}},callback);
-	    },
-	    function(callback) {
-	       var query= UserOrderModel.find({openid:openid,status:{$ne:0}}).sort({updateAt:-1}).limit(5);
-			query.exec(callback);
-	    }
-	],
-	function(err, results) {
-	   	orders={};
-	   	orders.all_count = results[0];
-	   	orders.list = results[1];
-	   	var str='您共有【'+orders.all_count+'】个订单，近期订单如下:\r\n ━┉┉┉┉∞┉┉┉┉━\r\n'+
-		'订单号|日 期|状 态|返 利\r\n';
-		for (var i = 0; i <=orders.list.length - 1; i++) {
-			var order = orders.list[i];
-			str += '***'+order.order_number.substr(5,5)+'***|'+order.create_at.substr(0,10)+'|'+getOrderStatus(order.status)+'| '+(order.tk_comm_fee?order.tk_comm_fee:'-')+' \r\n';
-		}
-		str += '━┉┉┉┉∞┉┉┉┉━\r\n◇ ◇ ◇   提醒◇ ◇ ◇ \r\n回复订单号才能获得返利哦! 商品点击收货后 余额超过1元输 “提现”提现。';
-		res.send({content: str});
-	});
+    var code = req.query.code;
+
+    getUserInfo(openid,code,function(sign){
+        if(sign){
+        	async.parallel([
+                    //并行同时执行
+                    function(callback) {
+                        UserOrderModel.count({openid:openid,status:{$ne:0}},callback);
+                    },
+                    function(callback) {
+                        var query= UserOrderModel.find({openid:openid,status:{$ne:0}}).sort({updateAt:-1}).limit(5);
+                        query.exec(callback);
+                    }
+                ],
+                function(err, results) {
+                    orders={};
+                    orders.all_count = results[0];
+                    orders.list = results[1];
+                    var str='您共有【'+orders.all_count+'】个订单，近期订单如下:\r\n ━┉┉┉┉∞┉┉┉┉━\r\n'+
+                        '订单号|日 期|状 态|返 利\r\n';
+                    for (var i = 0; i <=orders.list.length - 1; i++) {
+                        var order = orders.list[i];
+                        str += '***'+order.order_number.substr(5,5)+'***|'+order.create_at.substr(0,10)+'|'+getOrderStatus(order.status)+'| '+(order.tk_comm_fee?order.tk_comm_fee:'-')+' \r\n';
+                    }
+                    str += '━┉┉┉┉∞┉┉┉┉━\r\n◇ ◇ ◇   提醒◇ ◇ ◇ \r\n回复订单号才能获得返利哦! 商品点击收货后 余额超过1元输 “提现”提现。';
+                    res.send({content: str});
+                });
+        }else{
+            res.send('user error')
+        }
 })
 
 function getOrderStatus(status){
@@ -422,28 +465,34 @@ function getOrderStatus(status){
 
 router.get('/setOrder', function(req, res) {
     var openid = req.query.openid;
+    var code = req.query.code;
     var order_number = req.query.order_number;
 
-	async.waterfall([
-			function(callback){
-				UserOrderModel.findOne({order_number:order_number},function(err,uo){
-					if(uo){
-						return callback('已绑定订单，正在跟踪订单,请耐心等候！');
-					}
-					callback(null);
-				});
-			},
-			function(callback){
-				UserOrderModel.create({order_number:order_number,openid:openid,status:0});
-				callback(null);
-			}
-		],function(error,result){
-			if(error){
-				res.send(error);
-			}else{
-				res.send('订单【'+order_number+'】标记成功，稍后系统将自动追踪订单！');
-			}
-	});
+    getUserInfo(openid,code,function(sign){
+        if(sign){
+        	async.waterfall([
+                function(callback){
+                    UserOrderModel.findOne({order_number:order_number},function(err,uo){
+                        if(uo){
+                            return callback('已绑定订单，正在跟踪订单,请耐心等候！');
+                        }
+                        callback(null);
+                    });
+                },
+                function(callback){
+                    UserOrderModel.create({order_number:order_number,openid:openid,status:0});
+                    callback(null);
+                }
+            ],function(error,result){
+                if(error){
+                    res.send(error);
+                }else{
+                    res.send('订单【'+order_number+'】标记成功，稍后系统将自动追踪订单！');
+                }
+            });
+        }else{
+            res.send('user error')
+        }
 })
 
 router.post('/getTaobaoke_byCode', function(req, res) {
@@ -452,74 +501,79 @@ router.post('/getTaobaoke_byCode', function(req, res) {
     var code = req.body.code;
     var text = req.body.text;
 
-	var title = "";
-	if(text.indexOf('【')!=-1){
-		title = text.split('【')[1].split('】')[0];
-	}else{
-		title = text;
-	}
+    getUserInfo(openid,code,function(sign){
+        if(sign){
+	        var title = "";
+	        if(text.indexOf('【')!=-1){
+		         title = text.split('【')[1].split('】')[0];
+	        }else{
+		         title = text;
+	        }
 
-    data = {};
-	data.openid = openid;
-	data.code = code;
-	data.title = title;
-	MessageServer.getInstance(null).req_title_token(data);
-})
-
-router.post('/getTaobaoke', function(req, res) {
-
-    var openid = req.body.openid;
-    var code = req.body.code;
-    var text = req.body.text;
-
-	var url = text.split('】')[1].split(' ')[0];
-	TaobaoUtil.request_taobao_url(url,function(err,result){
-		if(err){
-			res.send("❋❋❋❋❋❋❋❋❋❋❋❋❋❋\r\n您查询的商品暂时没有优惠！\r\n❋❋❋❋❋❋❋❋❋❋❋❋❋❋");
-		}
-		if(result && result.data){
-			res.send('');
-			data = result.data;
-			data.openid = openid;
-			data.code = code;
-			MessageServer.getInstance(null).req_token(data);
+			     data = {};
+	             data.openid = openid;
+	             data.code = code;
+			     data.title = title;
+			     MessageServer.getInstance(null).req_title_token(data);
 		}else{
-			res.send("❋❋❋❋❋❋❋❋❋❋❋❋❋❋\r\n您查询的商品暂时没有优惠！\r\n❋❋❋❋❋❋❋❋❋❋❋❋❋❋");
-		}	
-	});
+			res.send('user error')
+		}
 })
 
-function getUserInfo(openid,config,message,request,w_req,w_res,next){
-	//var client = new WechatAPI(config.appid, config.appsecret);
-	async.waterfall([
-			function(callback){
-				UserModel.findOneAndUpdate({openid:openid,code:config.code},{action_time:Date.now()},function(err,user){
-					if(!user){
-						//console.log('无用户');
-						callback(null);
-					}else{
-						callback('用户存在');
-					}
-				});
-			},
-			function(callback){
-				user= {}
-				user.nickname = '';
-                user.openid = openid;
-				user.code = config.code;
-				user.current_balance = 0;
-				UserModel.create(user,function(error){if(error)console.log(error)});
-				//console.log(user);
-				callback(null,null);
-				
-			}
-		],function(err,res){
-			if(err){
-				console.log(err);
-			}
-			next(openid,config,message,request,w_req,w_res);
-	});
-}
+// router.post('/getTaobaoke', function(req, res) {
+//
+//     var openid = req.body.openid;
+//     var code = req.body.code;
+//     var text = req.body.text;
+//
+// 	var url = text.split('】')[1].split(' ')[0];
+// 	TaobaoUtil.request_taobao_url(url,function(err,result){
+// 		if(err){
+// 			res.send("❋❋❋❋❋❋❋❋❋❋❋❋❋❋\r\n您查询的商品暂时没有优惠！\r\n❋❋❋❋❋❋❋❋❋❋❋❋❋❋");
+// 		}
+// 		if(result && result.data){
+// 			res.send('');
+// 			data = result.data;
+// 			data.openid = openid;
+// 			data.code = code;
+// 			MessageServer.getInstance(null).req_token(data);
+// 		}else{
+// 			res.send("❋❋❋❋❋❋❋❋❋❋❋❋❋❋\r\n您查询的商品暂时没有优惠！\r\n❋❋❋❋❋❋❋❋❋❋❋❋❋❋");
+// 		}
+// 	});
+// })
+
+// function getUserInfo(openid,config,message,request,w_req,w_res,next){
+// 	//var client = new WechatAPI(config.appid, config.appsecret);
+// 	async.waterfall([
+// 			function(callback){
+// 				UserModel.findOneAndUpdate({openid:openid,code:config.code},{action_time:Date.now()},function(err,user){
+// 					if(!user){
+// 						//console.log('无用户');
+// 						callback(null);
+// 					}else{
+// 						callback('用户存在');
+// 					}
+// 				});
+// 			},
+// 			function(callback){
+// 				user= {}
+// 				user.nickname = '';
+//                 user.openid = openid;
+// 				user.code = config.code;
+// 				user.current_balance = 0;
+// 				UserModel.create(user,function(error){if(error)console.log(error)});
+// 				//console.log(user);
+// 				callback(null,null);
+//
+// 			}
+// 		],function(err,res){
+// 			if(err){
+// 				console.log(err);
+// 			}
+// 			next(openid,config,message,request,w_req,w_res);
+// 	});
+// }
 
 // function getAccessToken(code,callback){
 // 	var config=weichat_conf[code];
