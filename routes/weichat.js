@@ -363,10 +363,10 @@ router.get('/getUser', function(req, res) {
     var openid = req.query.openid;
     var code = req.query.code;
 
-    getUserInfo(openid,code,function(sign){
-        if(sign){
-        	UserModel.findOne({openid:openid},function(error,user){
-                if(user) {
+    getUserInfo(openid,code,function(sign) {
+        if (sign) {
+            UserModel.findOne({openid: openid}, function (error, user) {
+                if (user) {
                     if (!user.auction) {
                         var query = UserModel.find({
                             $or: [
@@ -386,13 +386,14 @@ router.get('/getUser', function(req, res) {
                     } else {
                         sendUserMessage(openid, user, res);
                     }
-                }else{
+                } else {
                     res.send('openid error')
                 }
             });
-        }else{
+        } else {
             res.send('user error')
         }
+    })
 })
 
 function sendUserMessage(openid,user,res){
@@ -419,34 +420,35 @@ router.get('/getOrders', function(req, res) {
     var openid = req.query.openid;
     var code = req.query.code;
 
-    getUserInfo(openid,code,function(sign){
-        if(sign){
-        	async.parallel([
+    getUserInfo(openid,code,function(sign) {
+        if (sign) {
+            async.parallel([
                     //并行同时执行
-                    function(callback) {
-                        UserOrderModel.count({openid:openid,status:{$ne:0}},callback);
+                    function (callback) {
+                        UserOrderModel.count({openid: openid, status: {$ne: 0}}, callback);
                     },
-                    function(callback) {
-                        var query= UserOrderModel.find({openid:openid,status:{$ne:0}}).sort({updateAt:-1}).limit(5);
+                    function (callback) {
+                        var query = UserOrderModel.find({openid: openid, status: {$ne: 0}}).sort({updateAt: -1}).limit(5);
                         query.exec(callback);
                     }
                 ],
-                function(err, results) {
-                    orders={};
+                function (err, results) {
+                    orders = {};
                     orders.all_count = results[0];
                     orders.list = results[1];
-                    var str='您共有【'+orders.all_count+'】个订单，近期订单如下:\r\n ━┉┉┉┉∞┉┉┉┉━\r\n'+
+                    var str = '您共有【' + orders.all_count + '】个订单，近期订单如下:\r\n ━┉┉┉┉∞┉┉┉┉━\r\n' +
                         '订单号|日 期|状 态|返 利\r\n';
-                    for (var i = 0; i <=orders.list.length - 1; i++) {
+                    for (var i = 0; i <= orders.list.length - 1; i++) {
                         var order = orders.list[i];
-                        str += '***'+order.order_number.substr(5,5)+'***|'+order.create_at.substr(0,10)+'|'+getOrderStatus(order.status)+'| '+(order.tk_comm_fee?order.tk_comm_fee:'-')+' \r\n';
+                        str += '***' + order.order_number.substr(5, 5) + '***|' + order.create_at.substr(0, 10) + '|' + getOrderStatus(order.status) + '| ' + (order.tk_comm_fee ? order.tk_comm_fee : '-') + ' \r\n';
                     }
                     str += '━┉┉┉┉∞┉┉┉┉━\r\n◇ ◇ ◇   提醒◇ ◇ ◇ \r\n回复订单号才能获得返利哦! 商品点击收货后 余额超过1元输 “提现”提现。';
                     res.send({content: str});
                 });
-        }else{
+        } else {
             res.send('user error')
         }
+    })
 })
 
 function getOrderStatus(status){
@@ -468,31 +470,32 @@ router.get('/setOrder', function(req, res) {
     var code = req.query.code;
     var order_number = req.query.order_number;
 
-    getUserInfo(openid,code,function(sign){
-        if(sign){
-        	async.waterfall([
-                function(callback){
-                    UserOrderModel.findOne({order_number:order_number},function(err,uo){
-                        if(uo){
+    getUserInfo(openid,code,function(sign) {
+        if (sign) {
+            async.waterfall([
+                function (callback) {
+                    UserOrderModel.findOne({order_number: order_number}, function (err, uo) {
+                        if (uo) {
                             return callback('已绑定订单，正在跟踪订单,请耐心等候！');
                         }
                         callback(null);
                     });
                 },
-                function(callback){
-                    UserOrderModel.create({order_number:order_number,openid:openid,status:0});
+                function (callback) {
+                    UserOrderModel.create({order_number: order_number, openid: openid, status: 0});
                     callback(null);
                 }
-            ],function(error,result){
-                if(error){
+            ], function (error, result) {
+                if (error) {
                     res.send(error);
-                }else{
-                    res.send('订单【'+order_number+'】标记成功，稍后系统将自动追踪订单！');
+                } else {
+                    res.send('订单【' + order_number + '】标记成功，稍后系统将自动追踪订单！');
                 }
             });
-        }else{
+        } else {
             res.send('user error')
         }
+    })
 })
 
 router.post('/getTaobaoke_byCode', function(req, res) {
@@ -501,23 +504,24 @@ router.post('/getTaobaoke_byCode', function(req, res) {
     var code = req.body.code;
     var text = req.body.text;
 
-    getUserInfo(openid,code,function(sign){
-        if(sign){
-	        var title = "";
-	        if(text.indexOf('【')!=-1){
-		         title = text.split('【')[1].split('】')[0];
-	        }else{
-		         title = text;
-	        }
+    getUserInfo(openid,code,function(sign) {
+        if (sign) {
+            var title = "";
+            if (text.indexOf('【') != -1) {
+                title = text.split('【')[1].split('】')[0];
+            } else {
+                title = text;
+            }
 
-			     data = {};
-	             data.openid = openid;
-	             data.code = code;
-			     data.title = title;
-			     MessageServer.getInstance(null).req_title_token(data);
-		}else{
-			res.send('user error')
-		}
+            data = {};
+            data.openid = openid;
+            data.code = code;
+            data.title = title;
+            MessageServer.getInstance(null).req_title_token(data);
+        } else {
+            res.send('user error')
+        }
+    })
 })
 
 // router.post('/getTaobaoke', function(req, res) {
