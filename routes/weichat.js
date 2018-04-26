@@ -143,7 +143,7 @@ function getUserInfo(openid,code,callback) {
 				}
             });
         }else{
-        	callback(false);
+        	callback(true);
         }
     });
 }
