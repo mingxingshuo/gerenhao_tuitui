@@ -348,7 +348,7 @@ router.get('/cash', function(req, res) {
                     if (parseFloat(current_balance.toFixed(2)) < 1) {
                         res.send({content: '您的余额为【' + current_balance.toFixed(2) + '】元，要达到【1.0】元才可以提现哦！'});
                     } else {
-                        res.send('您的余额为【' + current_balance.toFixed(2) + '】元。提现功能正在玩命开发中，两周后和您见面');
+                        res.send({content:'您的余额为【' + current_balance.toFixed(2) + '】元。提现功能正在玩命开发中，两周后和您见面'});
                     }
                 }
             });
@@ -387,11 +387,11 @@ router.get('/getUser', function(req, res) {
                         sendUserMessage(openid, user, res);
                     }
                 } else {
-                    res.send('openid error')
+                    res.send({err:'openid error'})
                 }
             });
         } else {
-            res.send('user error')
+            res.send({err:'user error'})
         }
     })
 })
@@ -446,7 +446,7 @@ router.get('/getOrders', function(req, res) {
                     res.send({content: str});
                 });
         } else {
-            res.send('user error')
+            res.send({err:'user error'})
         }
     })
 })
@@ -487,19 +487,18 @@ router.get('/setOrder', function(req, res) {
                 }
             ], function (error, result) {
                 if (error) {
-                    res.send(error);
+                    res.send({content:error});
                 } else {
-                    res.send('订单【' + order_number + '】标记成功，稍后系统将自动追踪订单！');
+                    res.send({content:'订单【' + order_number + '】标记成功，稍后系统将自动追踪订单！'});
                 }
             });
         } else {
-            res.send('user error')
+            res.send({err:'user error'})
         }
     })
 })
 
 router.post('/getTaobaoke_byCode', function(req, res) {
-	res.send('');
     var openid = req.body.openid;
     var code = req.body.code;
     var text = req.body.text;
@@ -518,8 +517,9 @@ router.post('/getTaobaoke_byCode', function(req, res) {
             data.code = code;
             data.title = title;
             MessageServer.getInstance(null).req_title_token(data);
+            res.send('');
         } else {
-            res.send('user error')
+            res.send({err:'user error'})
         }
     })
 })
