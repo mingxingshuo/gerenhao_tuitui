@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+	<title>
+		<%= title %>
+	</title>
+	<!--<base href="">-->
+	<base href=".">
+	<link rel="stylesheet" type="text/css" href="/stylesheets/common.css">
+	<link rel="stylesheet" type="text/css" href="/stylesheets/layout.css">
+	<script type="text/javascript" src="/javascripts/jquery.js"></script>
+	<script type="text/javascript" src="/javascripts/clipboard.js"></script>
+	<script>
+		!function () {
+			var cw = document.documentElement.clientWidth || document.body.clientWidth, zoom = cw / 320;
+			if (cw > 640) zoom = 2;
+			document.write('<style id="htmlzoom">html{font-size:' + (zoom * 50) + 'px;}</style>');
+			window.addEventListener('resize', function () {
+				cw = document.documentElement.clientWidth || document.body.clientWidth, zoom = cw / 320;
+				if (cw > 640) zoom = 2;
+				document.getElementById('htmlzoom').innerHTML = 'html{font-size:' + (zoom * 50) + 'px;}';
+			});
+		}();
+
+		function preventDefault(e) {
+			e.preventDefault();
+		}
+	</script>
+	<style id="htmlzoom">
+		html {
+			font-size: 56.25px;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="goodsBody">
+		<dl class="goods ">
+			<dt>
+				<div>
+					<img src='<%= pictUrl %>'>
+				</div>
+			</dt>
+			<dd>
+				<p class="p1">
+					<i class="laiyuan1"></i>
+					<%= title %>
+				</p>
+				<p class="p2">
+					<span class="span3">原价</span>
+					<span class="span2">￥
+						<font>
+							<%= price %>
+						</font>
+					</span>
+
+					<span style="color:rgb(242,83,137);font-size:20px;padding-left:50px;line-height: 30px;">优惠券：
+						<%= couponAmount %>元</span>
+				</p>
+				<ul class="ul_list_spf">
+					<li class="span_sell" style="font-size: 16px;">已售&nbsp;
+						<span>
+							<%= bizMonth*12 %>
+						</span>&nbsp;件</li>
+					<li class="fanli" style="left: 52%">返利
+						<font>
+							<%= tkCommFee %>
+						</font> 元</li>
+				</ul>
+			</dd>
+		</dl>
+		<div class="clear"></div>
+		<div style="height:1px;"></div>
+		<div class="tkl_box">
+			<p class="line"></p>
+			<div class="newstkl">
+				<span class="close"></span>
+				<h3 class="h_inline">
+					<span class="span_line">复制文案</span>
+				</h3>
+
+			</div>
+		</div>
+	</div>
+	<div class="yi-shangqiao yi-www" id="Shangqiao">
+		<ul class="yi-toolbar yi-bgcolor">
+			<li style="width:50%;">
+				<a href="javascript:yitaotanchuan();" class="yi-toolbar-tao">
+					<span style="text-indent: 0;">复制淘口令</span>
+				</a>
+			</li>
+			<li style="width:50%;">
+				<a href="javascript:weixinwindows()" class="yi-shoutao-buy">
+					<span style="text-indent: 0;">手淘购买</span>
+				</a>
+			</li>
+		</ul>
+	</div>
+	<div class="bg_yinyin"></div>
+	<div class="weixin-tip">
+		<p>
+			<img width="100%" src="/images/live_weixin.png" alt="微信打开">
+		</p>
+	</div>
+	<script>
+		$.ajax({
+			url: '/piclink/get?_id=<%= id %>',
+			type: 'get',
+			dataType: 'json',
+			success: function (res) {
+				var data = res.data
+				var html = '';
+				$.each(data, function (i, el) {
+					html += `
+				<div id="kwd" data-text="<%= title %>&lt;br/&gt;----------------&lt;br/&gt;【原价】：<%= price %>元&lt;br/&gt;【优惠】：<%= couponAmount %>元&lt;br/&gt;【返利】：<%= tkCommFee %>金币&lt;br/&gt;----------------&lt;br/&gt;【下单】：复制本信息→打开手机淘宝即可购买${el.token}"
+				 class="word_box" contenteditable="true"><%= title %>
+					<br>----------------
+					<br>【原价】：<%= price %>元
+					<br>【优惠券】：<%= couponAmount %>元
+					<br>【返利】：<%= tkCommFee %>元
+					<br>----------------
+					<br>复制本信息→打开手机淘宝即可领券下单${el.token}</div>
+				<p class="coupon_tishi">在点击复制后，请打开【手机淘宝】购买！</p>
+				<p class="coupon_zhushi">
+					<code>注：</code>
+					<span>若一键复制失败，请长按
+						<span></span>内文字，手工复制</span>
+				</p>
+				<p class="fuzhitaokl">
+					<i onclick="copy()" class="cp_btn btn" data-text="<%= title %>&lt;br/&gt;----------------&lt;br/&gt;【原价】：<%= price %>元&lt;br/&gt;【优惠券】：<%= couponAmount %>元&lt;br/&gt;【返利】：<%= tkCommFee %>元&lt;br/&gt;----------------&lt;br/&gt;【下单】：复制本信息→打开手机淘宝即可购买${el.token}">一键复制淘口令</i>
+				</p>`
+					$('.newstkl').append(html)
+				});
+			},
+			error: function () {
+				console.log(111)
+			}
+		})
+		$('.newstkl .close').click(function () {
+			$('.tkl_box').css('display', 'none');
+			$('.newstkl').css('display', 'none');
+		});
+		function copy() {
+			var clipboard = new Clipboard('i.cp_btn', {
+				text: function (trigger) {
+					return trigger.getAttribute('data-text');
+				}
+			});
+			clipboard.on('success', function (e) {
+				if (e.trigger.disabled == false || e.trigger.disabled == undefined) {
+					e.trigger.innerHTML = "已复制";
+					//e.trigger.style.backgroundColor = "#9ED29E";
+					//e.trigger.style.borderColor = "#9ED29E";
+					e.clearSelection();
+					e.trigger.disabled = true;
+					//alert(2);
+					//2秒后按钮恢复原状
+					setTimeout(function () {
+						// alert(3);
+						e.trigger.innerHTML = "一键复制淘口令";
+						//e.trigger.style.backgroundColor = "#f54d23";
+						//e.trigger.style.borderColor = "#f54d23";
+						e.trigger.disabled = false;
+					}, 2000);
+				}
+			});
+
+			clipboard.on('error', function (e) {
+				e.trigger.innerHTML = "复制失败";
+				//e.trigger.style.backgroundColor = "#8f8f8f";
+				//e.trigger.style.borderColor = "#8f8f8f";
+			});
+		};
+		// $('p.fuzhitaokl i.cp_btn').click(function() {
+		// 	// var b = document.getElementById('kwd').contentWindow
+		//           console.log(11111)
+		// 	copy(b)
+		// });
+		// function copy(b){
+		//           b.document.execCommand("copy", false, null);
+		//           console.log(11111)
+		//       }
+
+		function yitaotanchuan() {
+			$('.tkl_box').css('display', 'block');
+			$('.newstkl').css('display', 'block');
+		}
+
+		function is_weixin() {
+			var ua = navigator.userAgent.toLowerCase();
+			if (ua.match(/MicroMessenger/i) == "micromessenger") {
+				return true;
+			} else {
+				window.location.href="https://t.asczwa.com/taobao?backurl=<%= link_url %>"
+			}
+		}
+
+		function weixinwindows() {
+			var winHeight = $(window).height();
+			var isWeixin = is_weixin();
+			if (isWeixin) {
+				$(".weixin-tip").css("height", winHeight);
+				$(".weixin-tip").show();
+			}
+		}
+
+
+	</script>
+
+</body>
+
+</html>
