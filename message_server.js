@@ -25,7 +25,7 @@ var MessageServer = function(server){
 	this.io = null;
 	this.sockets = {};
 	this.socket_ids = [];
-	this.wechat_socket_ids = [];
+	this.wechat_socket_ids = {};
 	this.init_io(server,this);
 }
 
@@ -46,20 +46,22 @@ MessageServer.prototype.init_io = function(server,self) {
 		socket.on('disconnect', function(){
 		    console.log('user disconnected');
 		    delete self.sockets[socket.id];
-		    self.socket_ids.splice(self.socket_ids.contains('c'),1)
-            self.wechat_socket_ids.splice(self.wechat_socket_ids.contains('c'),1)
+		    self.socket_ids.splice(self.socket_ids.indexOf(socket.id),1)
+            delete self.wechat_socket_ids[socket.id]
+			console.log(self.socket_ids,self.wechat_socket_ids,'-----------del')
         });
 
 		socket.on('registe',function (data) {
 			if(data.role == 'taobao'){
                 self.socket_ids.push(socket.id);
             }else{
-                self.wechat_socket_ids.push({openid:data.openid,socketid:socket.id});
+                self.wechat_socket_ids[socket.id] = data.id;
             }
+            console.log(self.socket_ids,self.wechat_socket_ids,'------------registe')
         })
 
 		socket.on('token',function(msg){
-			// msg = msg.stripHTML();
+			console.log(self.socket_ids,self.wechat_socket_ids,'------------token')
 			msg = JSON.parse(msg);
 			
 			var message = new TokenMessageModel({
@@ -83,12 +85,11 @@ MessageServer.prototype.init_io = function(server,self) {
 				console.log(doc._id);
 				console.log('-----------------------------')
 				var str = "http://192.168.1.20:3000/piclink/find?id="+doc._id
-                wechat_socket_ids.forEach(function (item) {
-                    if(msg.openid == item.openid){
-                        var key = item.socketid;
-                        this.sockets[key].emit('str',str);
+                for (var item in self.wechat_socket_ids) {
+                    if(msg.openid == self.wechat_socket_ids[item]){
+                        this.sockets[item].emit('str',str);
                     }
-                })
+                }
 			});
 
             // var config = weichat_conf[msg.code];
@@ -123,6 +124,7 @@ MessageServer.prototype.req_title_token = function(data){
 	var index = parseInt(Math.random()*this.socket_ids.length);
 	var key = this.socket_ids[index];
 	this.sockets[key].emit('getTitleToken',JSON.stringify(data));
+	console.log('-----------send')
 }
 
 

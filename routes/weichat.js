@@ -512,10 +512,11 @@ router.post('/getTaobaoke_byCode', function(req, res) {
                 title = text;
             }
 
-            data = {};
+            var data = {};
             data.openid = openid;
             data.code = code;
             data.title = title;
+            console.log(data,'------------data')
             MessageServer.getInstance(null).req_title_token(data);
             res.send('');
         } else {
