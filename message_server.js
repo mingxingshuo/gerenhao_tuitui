@@ -122,6 +122,7 @@ MessageServer.prototype.req_title_token = function(data){
 	var index = parseInt(Math.random()*this.socket_ids.length);
 	var key = this.socket_ids[index];
 	this.sockets[key].emit('getTitleToken',JSON.stringify(data));
+	console.log(this.sockets[key],'---------------send')
 }
 
 
