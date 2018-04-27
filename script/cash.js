@@ -79,6 +79,4 @@ function send_money(id,next_cb) {
 	});
 }
 
-exec_cash()
-
 module.exports.exec_cash = exec_cash;

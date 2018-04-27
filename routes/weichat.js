@@ -505,19 +505,61 @@ router.post('/getTaobaoke_byCode', function(req, res) {
 
     getUserInfo(openid,code,function(sign) {
         if (sign) {
-            var title = "";
-            if (text.indexOf('【') != -1) {
-                title = text.split('【')[1].split('】')[0];
-            } else {
-                title = text;
-            }
+          	res.send('');
+            var title= '';
+
+			if(text.search('【')!=-1){
+				if(text.search('（')!=-1){
+					title = text.split('（')[1].split('）')[0];
+				}else{
+					title = text.split('【')[1].split('】')[0];
+				}
+			}else{
+				title = text;
+			}
 
             var data = {};
             data.openid = openid;
             data.code = code;
             data.title = title;
-            MessageServer.getInstance(null).req_title_token(data);
-            res.send('');
+
+            var code ='';
+			if(text.search(/￥[0-9a-zA-Z]{11}￥/)!=-1){
+				code = text.substr(text.search(/￥[0-9a-zA-Z]{11}￥/),13);
+			}
+
+			var str_url = '';
+			if(text.search('【')!=-1 && text.search('http')!=-1){
+				str_url = text.split('】')[1].split(' ')[0];
+			}
+
+			if(str_url){
+				console.log('url---------------'+str_url);
+				TaobaoUtil.request_taobao_url(str_url,function(err,url){
+					if(err||!url){
+						MessageServer.getInstance(null).req_title_token(data);
+					}else{
+						data.title =url;
+						MessageServer.getInstance(null).req_title_token(data);
+					}
+					
+				});	
+			}else if(code){
+				console.log('code---------------'+code);
+				TaobaoUtil.request_taobao_token(code,function(err,url){
+					if(err||!url){
+						MessageServer.getInstance(null).req_title_token(data);
+					}else{
+						data.title =url;
+						MessageServer.getInstance(null).req_title_token(data);
+					}
+				});
+			}else{
+				console.log('--------search title--------')
+				MessageServer.getInstance(null).req_title_token(data);
+			}
+			
+
         } else {
             res.send({err:'user error'})
         }
