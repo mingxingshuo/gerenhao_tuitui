@@ -82,7 +82,7 @@ MessageServer.prototype.init_io = function(server,self) {
 				console.log('-------message id------------');
 				console.log(doc._id);
 				console.log('-----------------------------')
-				var str = "http://192.168.1.20:3000/piclink/find?id="+doc._id
+				var str = "http://www.zhifujiekou.vip/piclink/find?id="+doc._id
                 for (var item in self.wechat_socket_ids) {
                     if(msg.code == self.wechat_socket_ids[item]){
                         self.sockets[item].emit('reciveToken',JSON.stringify({'openid':msg.openid,'str':str}));
