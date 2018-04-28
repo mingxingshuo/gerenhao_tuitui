@@ -46,7 +46,9 @@ MessageServer.prototype.init_io = function(server,self) {
 		socket.on('disconnect', function(){
 		    console.log(self.taobao_socket_ids,self.wechat_socket_ids,socket.id,'user disconnected');
 		    delete self.sockets[socket.id];
-		    self.taobao_socket_ids.splice(self.taobao_socket_ids.indexOf(socket.id),1)
+		    if(self.taobao_socket_ids.indexOf(socket.id) != -1){
+                self.taobao_socket_ids.splice(self.taobao_socket_ids.indexOf(socket.id),1)
+            }
             delete self.wechat_socket_ids[socket.id]
             console.log(self.taobao_socket_ids,self.wechat_socket_ids,'-------------list')
         });
