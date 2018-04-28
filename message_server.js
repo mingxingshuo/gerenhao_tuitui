@@ -64,21 +64,7 @@ MessageServer.prototype.init_io = function(server,self) {
 		socket.on('token',function(msg){
 			msg = JSON.parse(msg);
 			
-			var message = new TokenMessageModel({
-				title : msg.data.title,
-				price : msg.data.price,
-				reservePrice : msg.data.reservePrice,
-				tkCommFee : (0.2*msg.data.tkCommFee).toFixed(2),
-				code : msg.code,
-				openid : msg.openid,
-				token : msg.token,
-				link_url : msg.link_url,
-				couponAmount : msg.data.couponAmount,
-				shopTitle : msg.data.shopTitle,
-				pictUrl : msg.data.pictUrl,
-				url : msg.url,
-				bizMonth :msg.data.bizMonth
-			});
+			
             if(!msg.data) {
                 var str = "主人！！这家店铺太抠门了！没有设置优惠券和补贴！！\r\n-----------------\r\n"
                     + "主人不妨逛逛我的优惠券网站：http://t.cn/RuiCVc0\r\n"
@@ -89,6 +75,21 @@ MessageServer.prototype.init_io = function(server,self) {
                     }
                 }
             }else{
+            	var message = new TokenMessageModel({
+					title : msg.data.title,
+					price : msg.data.price,
+					reservePrice : msg.data.reservePrice,
+					tkCommFee : (0.2*msg.data.tkCommFee).toFixed(2),
+					code : msg.code,
+					openid : msg.openid,
+					token : msg.token,
+					link_url : msg.link_url,
+					couponAmount : msg.data.couponAmount,
+					shopTitle : msg.data.shopTitle,
+					pictUrl : msg.data.pictUrl,
+					url : msg.url,
+					bizMonth :msg.data.bizMonth
+				});
                 message.save(function(err,doc){
                     //' 测试数据ID  5aded26ff8438a6866e010b1'
                     console.log('-------message id------------');
