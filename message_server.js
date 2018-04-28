@@ -79,22 +79,36 @@ MessageServer.prototype.init_io = function(server,self) {
 				url : msg.url,
 				bizMonth :msg.data.bizMonth
 			});
-			message.save(function(err,doc){
-				//' 测试数据ID  5aded26ff8438a6866e010b1'
-				console.log('-------message id------------');
-				console.log(doc._id);
-				console.log('-----------------------------')
-				var str = "http://www.zhifujiekou.vip/piclink/find?id="+doc._id
+            if(!msg.data) {
+                str = "主人！！这家店铺太抠门了！没有设置优惠券和补贴！！\r\n-----------------\r\n"
+                    + "主人不妨逛逛我的优惠券网站：http://t.cn/RuiCVc0\r\n"
+                    + "点击查看更多优惠！\r\n-----------------\r\n还可以输入：搜索+商品名（例如：搜索鞋子）即可查找优惠券";
+                for (var item in self.wechat_socket_ids) {
+                    if (msg.code == self.wechat_socket_ids[item]) {
+                        self.sockets[item].emit('reciveToken', JSON.stringify({'openid': msg.openid, 'str': str}));
+                    }
+                }
+            }else{
+                message.save(function(err,doc){
+                    //' 测试数据ID  5aded26ff8438a6866e010b1'
+                    console.log('-------message id------------');
+                    console.log(doc._id);
+                    console.log('-----------------------------')
 
                     for (var item in self.wechat_socket_ids) {
                         if(msg.code == self.wechat_socket_ids[item]){
-                            request.get('http://suo.im/api.php?format=json&url='+str, function (error, response, data) {
-                                self.sockets[item].emit('reciveToken',JSON.stringify({'openid':msg.openid,'str':data.url}));
+                            var url = "http://www.zhifujiekou.vip/piclink/find?id="+doc._id
+                            request.get('http://suo.im/api.php?format=json&url='+url, function (error, response, data) {
+                                var str = "返利:"+message.tkCommFee+"优惠:" +message.couponAmount+ "原价:"+message.price
+                                    +"\r\n━┉┉┉┉∞┉┉┉┉━┉━┉━\r\n"+"点击链接查看商品\r\n" + data.url
+                                    +"\r\n━┉┉┉┉∞┉┉┉┉━┉━┉━\r\n买完记得把订单号码发给我领取“返利”哦"
+                                self.sockets[item].emit('reciveToken',JSON.stringify({'openid':msg.openid,'str':str}));
                             })
                         }
                     }
+                });
+			}
 
-			});
 
             // var config = weichat_conf[msg.code];
 			// if(!weichat_apis[config.code]){
