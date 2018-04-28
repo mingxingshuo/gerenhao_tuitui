@@ -100,7 +100,7 @@ MessageServer.prototype.init_io = function(server,self) {
                         if(msg.code == self.wechat_socket_ids[item]){
                             var url = "http://www.zhifujiekou.vip/piclink/find?id="+doc._id
                             request.get('http://suo.im/api.php?format=json&url='+encodeURIComponent(url), function (error, response, data) {
-                                var str = "返利:"+message.tkCommFee+"优惠:" +message.couponAmount+ "原价:"+message.price
+                                var str = "返利:"+message.tkCommFee+"  优惠券:" +message.couponAmount+ "  原价:"+message.price
                                     +"\r\n━┉┉┉┉∞┉┉┉┉━┉━┉━\r\n"+"点击链接查看商品\r\n" + JSON.parse(data).url
                                     +"\r\n━┉┉┉┉∞┉┉┉┉━┉━┉━\r\n买完记得把订单号码发给我领取“返利”哦"
                                 self.sockets[item].emit('reciveToken',JSON.stringify({'openid':msg.openid,'str':str}));
