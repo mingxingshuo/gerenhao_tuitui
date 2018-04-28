@@ -88,7 +88,7 @@ MessageServer.prototype.init_io = function(server,self) {
 
                     for (var item in self.wechat_socket_ids) {
                         if(msg.code == self.wechat_socket_ids[item]){
-                            request.get('http://suo.im/api.php?format=json&url='+url, function (error, response, data) {
+                            request.get('http://suo.im/api.php?format=json&url='+str, function (error, response, data) {
                                 self.sockets[item].emit('reciveToken',JSON.stringify({'openid':msg.openid,'str':data.url}));
                             })
                         }
