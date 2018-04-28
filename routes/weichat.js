@@ -551,7 +551,6 @@ router.post('/getTaobaoke_byCode', function(req, res) {
 						MessageServer.getInstance(null).req_title_token(data);
 					}else{
 						data.title =url;
-						console.log(data,'---------------data')
 						MessageServer.getInstance(null).req_title_token(data);
 					}
 				});
