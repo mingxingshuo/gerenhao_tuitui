@@ -24,7 +24,7 @@ var MessageServer = function(server){
 	this.server = server;
 	this.io = null;
 	this.sockets = {};
-	this.socket_ids = [];
+	this.taobao_socket_ids = [];
 	this.wechat_socket_ids = {};
 	this.init_io(server,this);
 }
@@ -42,21 +42,23 @@ MessageServer.prototype.init_io = function(server,self) {
 	self.io.on('connection', function (socket) {
 		console.log('connection')
 		self.sockets[socket.id] = socket;
-		// self.socket_ids.push(socket.id);
+		// self.taobao_socket_ids.push(socket.id);
 		socket.on('disconnect', function(){
-		    console.log('user disconnected');
+		    console.log(self.taobao_socket_ids,self.wechat_socket_ids,socket.id,'user disconnected');
 		    delete self.sockets[socket.id];
-		    self.socket_ids.splice(self.socket_ids.indexOf(socket.id),1)
+		    self.taobao_socket_ids.splice(self.taobao_socket_ids.indexOf(socket.id),1)
             delete self.wechat_socket_ids[socket.id]
+            console.log(self.taobao_socket_ids,self.wechat_socket_ids,'-------------list')
         });
 
 		socket.on('registe',function (data) {
 			data = JSON.parse(data);
 			if(data.role == 'taobao'){
-                self.socket_ids.push(socket.id);
+                self.taobao_socket_ids.push(socket.id);
             }else{
                 self.wechat_socket_ids[socket.id] = data.id;
             }
+            console.log(self.taobao_socket_ids,self.wechat_socket_ids,'-------------list')
         })
 
 		socket.on('token',function(msg){
@@ -83,6 +85,8 @@ MessageServer.prototype.init_io = function(server,self) {
 				console.log(doc._id);
 				console.log('-----------------------------')
 				var str = "http://www.zhifujiekou.vip/piclink/find?id="+doc._id
+                // var str = "http://192.168.1.20:3000/piclink/find?id="+doc._id
+
                 for (var item in self.wechat_socket_ids) {
                     if(msg.code == self.wechat_socket_ids[item]){
                         self.sockets[item].emit('reciveToken',JSON.stringify({'openid':msg.openid,'str':str}));
@@ -104,23 +108,23 @@ MessageServer.prototype.init_io = function(server,self) {
 }
 
 MessageServer.prototype.req_token = function(data){
-	if(this.socket_ids.length == 0){
-		console.log('no socket connect ');
+	if(this.taobao_socket_ids.length == 0){
+		console.log(this.taobao_socket_ids,' no socket connect ');
 		return;
 	}
-	var index = parseInt(Math.random()*this.socket_ids.length);
-	var key = this.socket_ids[index];
+	var index = parseInt(Math.random()*this.taobao_socket_ids.length);
+	var key = this.taobao_socket_ids[index];
 	this.sockets[key].emit('getToken',JSON.stringify(data));
 }
 
 
 MessageServer.prototype.req_title_token = function(data){
-	if(this.socket_ids.length == 0){
-		console.log('no socket connect ');
+	if(this.taobao_socket_ids.length == 0){
+		console.log(this.taobao_socket_ids,' no socket connect ');
 		return;
 	}
-	var index = parseInt(Math.random()*this.socket_ids.length);
-	var key = this.socket_ids[index];
+	var index = parseInt(Math.random()*this.taobao_socket_ids.length);
+	var key = this.taobao_socket_ids[index];
 	this.sockets[key].emit('getTitleToken',JSON.stringify(data));
 	console.log(this.sockets[key],'---------------send')
 }
