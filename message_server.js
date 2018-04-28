@@ -3,6 +3,7 @@ var WechatAPI = require('wechat-api');
 var weichat_conf = require('./conf/weichat.json');
 var weichat_apis ={};
 var TokenMessageModel = require('./model/TokenMessage');
+var request = require('request');
 
 String.prototype.stripHTML = function() {
 	var reTag = /<(?:.|\s)*?>/g;
