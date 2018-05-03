@@ -71,7 +71,7 @@ function update_order(_id,next){
 								callback(null);
 							},
                             function (callback) {
-                                if(order.states == -1 && order.createAt.getTime() + 8*3600 - new Date().getTime() > 15*60){
+                                if(order.states == -1 && order.createAt.getTime() + 8*3600*1000 - new Date().getTime() > 15*60*1000){
                                     order.states = -2
                                     order.save();
                                     console.log(order)
