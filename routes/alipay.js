@@ -9,16 +9,11 @@ var cash = require('../script/cash');
 var request = require('request');
 
 
-router.use('/redirect/:wechat',function(req, res, next){
-	var async = require('async');
+router.use('/redirect',function(req, res, next){
+    var wechat = req.query.wechat;
+    var openid = req.query.openid;
 	async.waterfall([
 			function(callback){
-				getOpenid(req,res,callback);
-			},
-			function(callback){
-				var wechat = req.params.wechat;
-				var openid = req.session['wechat_'+wechat];
-				console.log(openid);
 				UserModel.findOne({openid:openid},{openid:1,current_balance:1},function(error,user){
 					callback(error,user);
 				});
@@ -32,9 +27,7 @@ router.use('/redirect/:wechat',function(req, res, next){
 			if(error){
 				next(error);
 			}
-			//return res.send({user:user,cashs:cashs});
-
-			return res.render('alipay/index',{user:user,cashs:cashs,wechat:req.params.wechat});
+			return res.render('alipay/index',{user:user,cashs:cashs,wechat:wechat});
 	});
 });
 
@@ -151,27 +144,27 @@ function text_status(status){
 	}
 }
 
-function getOpenid(req,res,callback){
-	var wechat = req.params.wechat;
-	var openid = req.session['wechat_'+wechat];
-	var code = req.query.code;
-	if(!openid){
-		/*req.session['wechat_'+wechat] = 'o3qBK0RXH4BlFLEIksKOJEzx08og';
-		return callback();*/
-		if(!code){
-			var url = "https://open.weixin.qq.com/connect/oauth2/authorize?appid="+weichat_conf[wechat].appid+"&redirect_uri="+encodeURIComponent('http://'+req.hostname+req.originalUrl)+"&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect";
-			res.redirect(url);
-		}else{
-			var api_url="https://api.weixin.qq.com/sns/oauth2/access_token?appid="+weichat_conf[wechat].appid+"&secret="+weichat_conf[wechat].appsecret+"&code="+code+"&grant_type=authorization_code";
-			request(api_url,function(err,response,body){
-				body = JSON.parse(body);
-				req.session['wechat_'+req.params.wechat]=body.openid;
-				callback(null);
-			});
-		}
-	}else{
-		callback(null);
-	}
-}
+// function getOpenid(req,res,callback){
+// 	var wechat = req.params.wechat;
+// 	var openid = req.session['wechat_'+wechat];
+// 	var code = req.query.code;
+// 	if(!openid){
+// 		/*req.session['wechat_'+wechat] = 'o3qBK0RXH4BlFLEIksKOJEzx08og';
+// 		return callback();*/
+// 		if(!code){
+// 			var url = "https://open.weixin.qq.com/connect/oauth2/authorize?appid="+weichat_conf[wechat].appid+"&redirect_uri="+encodeURIComponent('http://'+req.hostname+req.originalUrl)+"&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect";
+// 			res.redirect(url);
+// 		}else{
+// 			var api_url="https://api.weixin.qq.com/sns/oauth2/access_token?appid="+weichat_conf[wechat].appid+"&secret="+weichat_conf[wechat].appsecret+"&code="+code+"&grant_type=authorization_code";
+// 			request(api_url,function(err,response,body){
+// 				body = JSON.parse(body);
+// 				req.session['wechat_'+req.params.wechat]=body.openid;
+// 				callback(null);
+// 			});
+// 		}
+// 	}else{
+// 		callback(null);
+// 	}
+// }
 
 module.exports = router;

@@ -4,10 +4,12 @@ var router = express.Router();
 var wechat = require('wechat');
 var WechatAPI = require('wechat-api');
 var crypto = require('crypto');
+var request = require('request');
 var taobao_apiClient = require('../util/taobaoke/index.js').ApiClient;
 var weichat_conf = require('../conf/weichat.json');
 var book_wechat_conf = require('../conf/book_wechat.json');
 var taobao_conf = require('../conf/taobao.json');
+var send_conf = require('../conf/sendUrl.json');
 var TaobaoUtil =require('../util/taobaoke_util.js');
 var async = require('async');
 
@@ -24,6 +26,7 @@ var weichat_apis ={};
 
 var Memcached = require('memcached');
 var memcached = new Memcached('127.0.0.1:11211');
+
 
 // router.use('/:code', function(request, response, next_fun) {
 // 	var config=weichat_conf[request.params.code];
@@ -342,18 +345,23 @@ router.get('/cash', function(req, res) {
     	if(sign){
             UserModel.findOne({openid: openid}, function (error, user) {
                 if (!user) {
-                    res.send('err');
+                    res.send({err:'user error'});
                 } else {
                     var current_balance = user.current_balance;
                     if (parseFloat(current_balance.toFixed(2)) < 1) {
                         res.send({content: '您的余额为【' + current_balance.toFixed(2) + '】元，要达到【1.0】元才可以提现哦！'});
                     } else {
-                        res.send({content:'您的余额为【' + current_balance.toFixed(2) + '】元。提现功能正在玩命开发中，两周后和您见面'});
+						var url = send_conf.cash.replace('OPENID',openid).replace('WECHAT',code)
+                        request.get(send_conf.suo.replace('URL',encodeURIComponent(url)), function (error, response, data) {
+                            res.send({content:'余额超过1元，可以申请提现！\r\n━┉┉┉┉∞┉┉┉┉━┉━━\r\n'+
+                            '< a href=" '+JSON.parse(data).url+'">点我提现</ a>\r\n'+
+                            '━┉┉┉┉∞┉┉┉┉━┉━━\r\n申请提现后，24小时内提现到账！'});
+                        });
                     }
                 }
             });
 		}else{
-    		res.send('user error')
+    		res.send({err:'user error'})
 		}
 	})
 

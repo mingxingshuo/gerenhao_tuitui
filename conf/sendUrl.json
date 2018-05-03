@@ -1,0 +1,5 @@
+{
+  "zhifu":"http://www.zhifujiekou.vip/piclink/find?id=ID",
+  "cash":"http://192.168.1.20:3001/alipay/redirect?openid=OPENID&wechat=WECHAT",
+  "suo":"http://suo.im/api.php?format=json&url=URL"
+}

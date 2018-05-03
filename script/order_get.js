@@ -8,6 +8,7 @@ var WechatAPI = require('wechat-api');
 var weichat_conf = require('../conf/weichat.json');
 var weichat_apis ={};
 var async = require('async');
+var MessageServer = require('../message_server.js');
 
 function next_up(_id){
 		if(_id){
@@ -28,7 +29,7 @@ function update_order(_id,next){
 		console.log('user_orders：'+user_orders.length);
 		async.each(user_orders,
 			function(order,cb){
-				TaobaoOrderModel.findOne({order_id:order.order_number},function(error,taobao){
+                TaobaoOrderModel.findOne({order_id:order.order_number},function(error,taobao){
 					if(!taobao){
 						return cb(null,null);
 					}
@@ -40,19 +41,13 @@ function update_order(_id,next){
 										if(!user){
 
 										}else{
-											if(!weichat_apis[user.code]){
-												var config = weichat_conf[user.code];
-												weichat_apis[user.code] = new WechatAPI(config.appid, config.appsecret);
-											}
-											var client = weichat_apis[user.code];
 											var str = '恭喜您！订单【'+taobao.order_id+'】【'+taobao.goods_info+'】跟踪成功！\r\n'+
 														'[须知]:商品确认收货后半小时返利会添加到个人账户\r\n\r\n一一一🍉常用指令一一一\r\n'+
 														'账户信息请回复：个人信息\r\n订单查询请回复：订单\r\n余额提现请回复：提现\r\n详细教程请回复：帮助';
-											client.sendText(user.openid, str, function(err,result){
-												console.log(err);
-												callback(null);
-											});
-										}
+                                            MessageServer.getInstance(null).update_order(user.openid,str,function (result) {
+                                                callback(null)
+                                            });
+                                        }
 									});
 								}else{
 									callback(null);
@@ -74,7 +69,22 @@ function update_order(_id,next){
 								}
 								order.save();
 								callback(null);
-							}
+							},
+                            function (callback) {
+                                if(order.states == -1 && order.createAt.getTime() + 8*3600 - new Date().getTime() > 15*60){
+                                    order.states = -2
+                                    order.save();
+                                    console.log(order)
+									var str = "【订单号】未找到，可能是以下原因：\r\n————绑定失败————\r\n亲请稍后重试\r\n再次失败请先取消订单\r\n重新复制信息下单！\r\n"
+									+ "————温馨提醒————\r\n下面三种情况会导致找不到订单：\r\n"
+									+"1.该商品在分享前已加入购物车\r\n2.该商品享受了店铺其他优惠\r\n3.下单前您没有复制我的信息"
+
+                                    MessageServer.getInstance(null).update_order(order.openid,str,function (result) {
+
+                                    });
+                                }
+                                callbak(null)
+                            }
 						],function(error,result){
 							return cb(null,null);
 					});
@@ -90,6 +100,7 @@ function update_order(_id,next){
 				}
 				
 		});
+
 
 	});
 }

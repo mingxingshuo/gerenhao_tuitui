@@ -1,6 +1,7 @@
 var socket = require('socket.io')
 var WechatAPI = require('wechat-api');
 var weichat_conf = require('./conf/weichat.json');
+var send_conf = require('./conf/sendUrl.json');
 var weichat_apis ={};
 var TokenMessageModel = require('./model/TokenMessage');
 var request = require('request');
@@ -98,8 +99,8 @@ MessageServer.prototype.init_io = function(server,self) {
 
                     for (var item in self.wechat_socket_ids) {
                         if(msg.code == self.wechat_socket_ids[item]){
-                            var url = "http://www.zhifujiekou.vip/piclink/find?id="+doc._id
-                            request.get('http://suo.im/api.php?format=json&url='+encodeURIComponent(url), function (error, response, data) {
+                            var url = send_conf.zhifu.replace('ID',doc._id)
+                            request.get(send_conf.suo.replace(URL,encodeURIComponent(url)), function (error, response, data) {
                                 var str = "返利:"+message.tkCommFee+"  优惠券:" +message.couponAmount+ "  原价:"+message.price
                                     +"\r\n━┉┉┉┉∞┉┉┉┉━┉━┉━\r\n"+"点击链接查看商品\r\n" + JSON.parse(data).url
                                     +"\r\n━┉┉┉┉∞┉┉┉┉━┉━┉━\r\n买完记得把订单号码发给我领取“返利”哦"
@@ -134,7 +135,6 @@ MessageServer.prototype.req_token = function(data){
 	this.sockets[key].emit('getToken',JSON.stringify(data));
 }
 
-
 MessageServer.prototype.req_title_token = function(data){
 	if(this.taobao_socket_ids.length == 0){
 		console.log(this.taobao_socket_ids,' no socket connect ');
@@ -143,6 +143,19 @@ MessageServer.prototype.req_title_token = function(data){
 	var index = parseInt(Math.random()*this.taobao_socket_ids.length);
 	var key = this.taobao_socket_ids[index];
 	this.sockets[key].emit('getTitleToken',JSON.stringify(data));
+}
+
+MessageServer.prototype.update_order = function(openid,str,callback){
+    if(this.wechat_socket_ids.length == 0){
+        console.log(this.wechat_socket_ids,' no wechat connect');
+    }else{
+        for (var item in this.wechat_socket_ids) {
+            if(openid == this.wechat_socket_ids[item]){
+                this.sockets[item].emit('updateOrder',JSON.stringify({'openid':openid,'str':str}));
+            }
+        }
+	}
+    callback(null)
 }
 
 
