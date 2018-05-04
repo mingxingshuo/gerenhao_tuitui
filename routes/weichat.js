@@ -354,7 +354,7 @@ router.get('/cash', function(req, res) {
 						var url = send_conf.cash.replace('OPENID',openid).replace('WECHAT',code)
                         request.get(send_conf.suo.replace('URL',encodeURIComponent(url)), function (error, response, data) {
                             res.send({content:'余额超过1元，可以申请提现！\r\n━┉┉┉┉∞┉┉┉┉━┉━━\r\n'+
-                            '点击下面链接\r\n'+JSON.parse(data).url+"\r\n"
+                            '点击下面链接\r\n'+JSON.parse(data).url+"\r\n"+
                             '━┉┉┉┉∞┉┉┉┉━┉━━\r\n申请提现后，24小时内提现到账！'});
                         });
                     }
