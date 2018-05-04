@@ -100,8 +100,8 @@ MessageServer.prototype.init_io = function(server,self) {
                     for (var item in self.wechat_socket_ids) {
                         if(msg.code == self.wechat_socket_ids[item]){
                             var url = send_conf.zhifu.replace('ID',doc._id)
-                            console.log('url-----------'+send_conf.suo.replace(url,encodeURIComponent(url)));
-                            request.get(send_conf.suo.replace(url,encodeURIComponent(url)), function (error, response, data) {
+                            console.log('url-----------'+send_conf.suo.replace("URL",encodeURIComponent(url)));
+                            request.get(send_conf.suo.replace("URL",encodeURIComponent(url)), function (error, response, data) {
                                 var str = "返利:"+message.tkCommFee+"  优惠券:" +message.couponAmount+ "  原价:"+message.price
                                     +"\r\n━┉┉┉┉∞┉┉┉┉━┉━┉━\r\n"+"点击链接查看商品\r\n" + JSON.parse(data).url
                                     +"\r\n━┉┉┉┉∞┉┉┉┉━┉━┉━\r\n买完记得把订单号码发给我领取“返利”哦"
