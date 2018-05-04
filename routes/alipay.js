@@ -12,6 +12,7 @@ var request = require('request');
 router.use('/redirect',function(req, res, next){
     var wechat = req.query.wechat;
     var openid = req.query.openid;
+    req.session['wechat_'+wechat] = openid;
 	async.waterfall([
 			function(callback){
 				UserModel.findOne({openid:openid},{openid:1,current_balance:1},function(error,user){
