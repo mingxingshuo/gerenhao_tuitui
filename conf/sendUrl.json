@@ -1,5 +1,4 @@
 {
   "zhifu":"http://geren.rrdtjj.top/piclink/find?id=ID",
-  "cash":"http://geren.rrdtjj.top/alipay/redirect?openid=OPENID&wechat=WECHAT",
-  "suo":"http://suo.im/api.php?format=json&url=URL"
+  "cash":"http://geren.rrdtjj.top/alipay/redirect?openid=OPENID&wechat=WECHAT"
 }

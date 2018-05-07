@@ -10,6 +10,7 @@ var weichat_conf = require('../conf/weichat.json');
 var book_wechat_conf = require('../conf/book_wechat.json');
 var taobao_conf = require('../conf/taobao.json');
 var send_conf = require('../conf/sendUrl.json');
+var duanlian = require('./util/duanlian_util');
 var TaobaoUtil =require('../util/taobaoke_util.js');
 var async = require('async');
 
@@ -352,9 +353,9 @@ router.get('/cash', function(req, res) {
                         res.send({content: '您的余额为【' + current_balance.toFixed(2) + '】元，要达到【1.0】元才可以提现哦！'});
                     } else {
 						var url = send_conf.cash.replace('OPENID',openid).replace('WECHAT',code)
-                        request.get(send_conf.suo.replace('URL',encodeURIComponent(url)), function (error, response, data) {
+                        request.get(duanlian.convert_url(url), function (data) {
                             res.send({content:'余额超过1元，可以申请提现！\r\n━┉┉┉┉∞┉┉┉┉━┉━━\r\n'+
-                            '点击下面链接\r\n'+JSON.parse(data).url+"\r\n"+
+                            '点击下面链接\r\n'+data+"\r\n"+
                             '━┉┉┉┉∞┉┉┉┉━┉━━\r\n申请提现后，24小时内提现到账！'});
                         });
                     }
