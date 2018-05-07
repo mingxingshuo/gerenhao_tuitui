@@ -353,7 +353,7 @@ router.get('/cash', function(req, res) {
                         res.send({content: '您的余额为【' + current_balance.toFixed(2) + '】元，要达到【1.0】元才可以提现哦！'});
                     } else {
 						var url = send_conf.cash.replace('OPENID',openid).replace('WECHAT',code)
-                        request.get(duanlian.convert_url(url), function (data) {
+                        duanlian.convert_url(url, function (data) {
                             res.send({content:'余额超过1元，可以申请提现！\r\n━┉┉┉┉∞┉┉┉┉━┉━━\r\n'+
                             '点击下面链接\r\n'+data+"\r\n"+
                             '━┉┉┉┉∞┉┉┉┉━┉━━\r\n申请提现后，24小时内提现到账！'});
