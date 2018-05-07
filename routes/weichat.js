@@ -152,16 +152,7 @@ function getUserInfo(openid,code,callback) {
     });
 }
 
-function getSearch(config,openid,text,res){
-	var key = text.substr(2,text.length).trim();
-	var url = 'http://mingxinggouwubao.m.zhifujiekou.vip/index/index/sort/8/all_hide/1/key/'+encodeURIComponent(key);
-	var str = '点击下方链接查看【'+key+'】给力优惠券！\r\n'
-        		+'━┉┉┉┉∞┉┉┉┉━\r\n'
-       			+ '<a href="'+url+'">点我查看优惠券</a>\r\n'
-		        +'━┉┉┉┉∞┉┉┉┉━\r\n'
-		        +'买完记得把订单号码发给我领取“返利”哦！';
-	res.reply(str);
-}
+
 
 function saveActionMiaoSha(openid,text,code,res){
 	var replay_number = parseInt(text);
@@ -336,6 +327,18 @@ function getCode(openid,text,res){
 							'⼀⼀⼀⼀使⽤攻略⼀⼀⼀⼀\r\n<指定商品优惠查询>请将淘宝商品分享给我！\r\n教程：http://t.cn/RETghsf');
 	});
 }
+
+router.get('/getSearch', function(req, res) {
+    var key = req.query.key;
+    var url = send_conf.search.replace('KEY',encodeURIComponent(key));
+    duanlian.convert_url(url, function (data) {
+        var str = '点击下方链接查看【' + key + '】给力优惠券！\r\n'
+            + '━┉┉┉┉∞┉┉┉┉━\r\n'
+            + data + '\r\n━┉┉┉┉∞┉┉┉┉━\r\n'
+            + '买完记得把订单号码发给我领取“返利”哦！';
+        res.send({content:str});
+    })
+})
 
 //待开发
 router.get('/cash', function(req, res) {

@@ -1,4 +1,5 @@
 {
   "zhifu":"http://geren.rrdtjj.top/piclink/find?id=ID",
-  "cash":"http://geren.rrdtjj.top/alipay/redirect?openid=OPENID&wechat=WECHAT"
+  "cash":"http://geren.rrdtjj.top/alipay/redirect?openid=OPENID&wechat=WECHAT",
+  "search":"http://mingxinggouwubao.m.zhifujiekou.vip/index/index/sort/8/all_hide/1/key/KEY"
 }
