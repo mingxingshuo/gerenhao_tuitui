@@ -64,13 +64,13 @@ function update_order(_id,next){
 											UserModel.findOneAndUpdate({openid:order.openid},{$inc:{current_balance:add_cash}},function(error,u){
 												console.log(error);
 											});
+                                            var str = "淘宝订单【"+taobao.order_id+"】【"+taobao.goods_info+"】" +
+                                                "已结算，返利【"+add_cash+"】元已添加到您的帐户！\r\n回复【个人信息】可以查看帐户情况！"
+                                            MessageServer.getInstance(null).rebate_msg(order.openid,str,function (result) {
+
+                                            });
 										}
 									});
-									var str = "淘宝订单【"+taobao.order_id+"】【"+taobao.goods_info+"】" +
-										"已结算，返利【"+add_cash+"】元已添加到您的帐户！\r\n回复【个人信息】可以查看帐户情况！"
-                                    MessageServer.getInstance(null).rebate_msg(order.openid,str,function (result) {
-
-                                    });
 								}
 								order.save();
 								callback(null);
