@@ -56,9 +56,9 @@ function update_order(_id,next){
 							function(callback){
 								order.status = getOrderStatus(taobao.order_status);
 								if( order.status == 3){
-									AddFreeOrderModel.findOne({order_number:order.order_number},function(err,addOrder){
+                                    var add_cash = parseFloat((parseFloat(taobao.order_tkCommFee)*0.2).toFixed(2));
+                                    AddFreeOrderModel.findOne({order_number:order.order_number},function(err,addOrder){
 										if(!addOrder){
-											var add_cash = parseFloat((parseFloat(taobao.order_tkCommFee)*0.2).toFixed(2));
 											order.tk_comm_fee = add_cash;
 											AddFreeOrderModel.create({openid:order.openid,type:1,cash:add_cash,order_number:order.order_number});
 											UserModel.findOneAndUpdate({openid:order.openid},{$inc:{current_balance:add_cash}},function(error,u){
@@ -66,12 +66,17 @@ function update_order(_id,next){
 											});
 										}
 									});
+									var str = "淘宝订单【"+taobao.order_id+"】【"+taobao.goods_info+"】" +
+										"已结算，返利【"+add_cash+"】元已添加到您的帐户！回复【个人信息】可以查看帐户情况！"
+                                    MessageServer.getInstance(null).rebate_msg(order.openid,str,function (result) {
+
+                                    });
 								}
 								order.save();
 								callback(null);
 							},
                             function (callback) {
-                                if(order.states == -1 && (new Date().getTime() - 8*3600*1000 - order.createAt.getTime()) > 15*60*1000){
+                                if(order.states == -1 && (new Date().getTime() - order.createAt.getTime()) > 15*60*1000){
                                     order.states = -2
                                     order.save();
                                     console.log(order)

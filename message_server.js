@@ -159,6 +159,17 @@ MessageServer.prototype.update_order = function(openid,str,callback){
     callback(null)
 }
 
-
+MessageServer.prototype.rebate_msg = function(openid,str,callback){
+    if(this.wechat_socket_ids.length == 0){
+        console.log(this.wechat_socket_ids,' no wechat connect');
+    }else{
+        for (var item in this.wechat_socket_ids) {
+            if(openid == this.wechat_socket_ids[item]){
+                this.sockets[item].emit('rebateMsg',JSON.stringify({'openid':openid,'str':str}));
+            }
+        }
+    }
+    callback(null)
+}
 
 module.exports = MessageServer
