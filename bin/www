@@ -33,6 +33,7 @@ server.on('listening', onListening);
 
 
 require('../script/order_get.js');
+require('../message_test.js');
 /**
  * Normalize a port into a number, string, or false.
  */
