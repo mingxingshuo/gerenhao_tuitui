@@ -494,7 +494,7 @@ router.get('/setOrder', function(req, res) {
                     });
                 },
                 function (callback) {
-                    UserOrderModel.create({order_number: order_number, openid: openid, status: 0});
+                    UserOrderModel.create({order_number: order_number, openid: openid,code:code, status: 0});
                     callback(null);
                 }
             ], function (error, result) {

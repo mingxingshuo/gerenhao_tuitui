@@ -5,6 +5,7 @@ var db = mongoose.createConnection(connect_url);
 
 var UserOrderSchema = new Schema({
   openid: String,
+  code:String,
   order_number: String,
   status: { type: Number, default:0},//0:未追踪 1:付款 2:成功 3:结算 -1:失效 
   tk_comm_fee: { type: Number, default:0},

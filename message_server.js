@@ -146,30 +146,18 @@ MessageServer.prototype.req_title_token = function(data){
 	this.sockets[key].emit('getTitleToken',JSON.stringify(data));
 }
 
-MessageServer.prototype.update_order = function(openid,str,callback){
+MessageServer.prototype.update_order = function(openid,code,str,callback){
     if(this.wechat_socket_ids.length == 0){
         console.log(this.wechat_socket_ids,' no wechat connect');
     }else{
         for (var item in this.wechat_socket_ids) {
-            if(openid == this.wechat_socket_ids[item]){
+            console.log(this.wechat_socket_ids[item],'----------------socketid')
+            if(code == this.wechat_socket_ids[item]){
                 console.log(this.sockets[item],'-------------------socket')
-                this.sockets[item].emit('updateOrder',JSON.stringify({'openid':openid,'str':str}));
+                this.sockets[item].emit('updateOrder',JSON.stringify({'openid':openid,'code':code,'str':str}));
             }
         }
 	}
-    callback(null)
-}
-
-MessageServer.prototype.rebate_msg = function(openid,str,callback){
-    if(this.wechat_socket_ids.length == 0){
-        console.log(this.wechat_socket_ids,' no wechat connect');
-    }else{
-        for (var item in this.wechat_socket_ids) {
-            if(openid == this.wechat_socket_ids[item]){
-                this.sockets[item].emit('rebateMsg',JSON.stringify({'openid':openid,'str':str}));
-            }
-        }
-    }
     callback(null)
 }
 
