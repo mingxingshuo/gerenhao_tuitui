@@ -39,11 +39,12 @@ function update_order(_id,next){
 									order.create_at = taobao.create_at;
 									UserModel.findOne({openid:order.openid},function(err,user){
 										if(!user){
-
+											console.log('---------------------no user')
 										}else{
 											var str = '恭喜您！订单【'+taobao.order_id+'】【'+taobao.goods_info+'】跟踪成功！\r\n'+
 														'[须知]:商品确认收货后半小时返利会添加到个人账户\r\n\r\n一一一🍉常用指令一一一\r\n'+
 														'账户信息请回复：个人信息\r\n订单查询请回复：订单\r\n余额提现请回复：提现\r\n详细教程请回复：帮助';
+                                            console.log('---------------------send genzong message')
                                             MessageServer.getInstance(null).update_order(user.openid,str,function (result) {
                                                 callback(null)
                                             });

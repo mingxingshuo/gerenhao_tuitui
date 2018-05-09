@@ -152,6 +152,7 @@ MessageServer.prototype.update_order = function(openid,str,callback){
     }else{
         for (var item in this.wechat_socket_ids) {
             if(openid == this.wechat_socket_ids[item]){
+                console.log(this.sockets[item],'-------------------socket')
                 this.sockets[item].emit('updateOrder',JSON.stringify({'openid':openid,'str':str}));
             }
         }
