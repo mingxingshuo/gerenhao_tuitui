@@ -91,7 +91,7 @@ function convert_url(o_url,next){
 		    if (!error && response.statusCode == 200) {
 		    	var url_obj = JSON.parse(body);
 		    	if(url_obj.data&&url_obj.data.short_url){
-		    		next(url_obj.data.short_url)
+		    		next(url_obj.data.detail)
 		    	}else{
 		    		next('')
 		    	}
