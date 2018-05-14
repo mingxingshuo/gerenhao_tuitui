@@ -94,10 +94,10 @@ function convert_url(o_url,next){
                 if(url_obj.data&&url_obj.data.short_url){
 		    		next(url_obj.data.short_url)
 		    	}else{
-		    		next('')
+		    		next(o_url)
 		    	}
 		    }else{
-		    	return next('')
+		    	return next(o_url)
 		    }
 		});
 	});
