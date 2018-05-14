@@ -334,7 +334,7 @@ router.get('/getSearch', function(req, res) {
     duanlian.convert_url(url, function (data) {
         var str = '点击下方链接查看【' + key + '】给力优惠券！\r\n'
             + '━┉┉┉┉∞┉┉┉┉━\r\n'
-            + url + '\r\n━┉┉┉┉∞┉┉┉┉━\r\n'
+            + data + '\r\n━┉┉┉┉∞┉┉┉┉━\r\n'
             + '买完记得把订单号码发给我领取“返利”哦！';
         res.send({content:str});
     })
@@ -358,7 +358,7 @@ router.get('/cash', function(req, res) {
 						var url = send_conf.cash.replace('OPENID',openid).replace('WECHAT',code)
                         duanlian.convert_url(url, function (data) {
                             res.send({content:'余额超过1元，可以申请提现！\r\n━┉┉┉┉∞┉┉┉┉━┉━━\r\n'+
-                            '点击下面链接\r\n'+url+"\r\n"+
+                            '点击下面链接\r\n'+data+"\r\n"+
                             '━┉┉┉┉∞┉┉┉┉━┉━━\r\n申请提现后，24小时内提现到账！'});
                         });
                     }
