@@ -63,6 +63,7 @@ MessageServer.prototype.init_io = function(server,self) {
                 self.wechat_socket_ids[socket.id] = data.id;
                 console.log(socket.id,data.id ,'-------------myid')
             }
+            self.sockets[socket.id].emit('registe','注册成功');
         })
 
 		socket.on('token',function(msg){
