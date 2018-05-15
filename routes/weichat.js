@@ -331,13 +331,13 @@ function getCode(openid,text,res){
 router.get('/getSearch', function(req, res) {
     var key = req.query.key;
     var url = send_conf.search.replace('KEY',encodeURIComponent(key));
-    duanlian.convert_url(url, function (data) {
+    // duanlian.convert_url(url, function (data) {
         var str = '点击下方链接查看【' + key + '】给力优惠券！\r\n'
             + '━┉┉┉┉∞┉┉┉┉━\r\n'
-            + data + '\r\n━┉┉┉┉∞┉┉┉┉━\r\n'
+            + url + '\r\n━┉┉┉┉∞┉┉┉┉━\r\n'
             + '买完记得把订单号码发给我领取“返利”哦！';
         res.send({content:str});
-    })
+    // })
 })
 
 //待开发
@@ -356,11 +356,11 @@ router.get('/cash', function(req, res) {
                         res.send({content: '您的余额为【' + current_balance.toFixed(2) + '】元，要达到【1.0】元才可以提现哦！'});
                     } else {
 						var url = send_conf.cash.replace('OPENID',openid).replace('WECHAT',code)
-                        duanlian.convert_url(url, function (data) {
+                        // duanlian.convert_url(url, function (data) {
                             res.send({content:'余额超过1元，可以申请提现！\r\n━┉┉┉┉∞┉┉┉┉━┉━━\r\n'+
-                            '点击下面链接\r\n'+data+"\r\n"+
+                            '点击下面链接\r\n'+url+"\r\n"+
                             '━┉┉┉┉∞┉┉┉┉━┉━━\r\n申请提现后，24小时内提现到账！'});
-                        });
+                        // });
                     }
                 }
             });
