@@ -60,6 +60,7 @@ MessageServer.prototype.init_io = function(server,self) {
                 self.taobao_socket_ids.push(socket.id);
             }else{
                 self.wechat_socket_ids[socket.id] = data.id;
+                console.log(socket.id,data.id ,'-------------myid')
             }
         })
 
@@ -98,8 +99,11 @@ MessageServer.prototype.init_io = function(server,self) {
                     console.log(doc._id);
                     console.log('-----------------------------')
 
+                    console.log(self.wechat_socket_ids,'--------------------wechat_socket_ids')
                     for (var item in self.wechat_socket_ids) {
+                        console.log(item,'-------------item')
                         if(msg.code == self.wechat_socket_ids[item]){
+                            console.log(msg.code ,'-------------equal')
                             var url = send_conf.zhifu.replace('IMAGE',message.pictUrl).replace('WORD',message.token)
                             // duanlian.convert_url(url, function (data) {
                                 var str = "返利:"+message.tkCommFee+"  优惠券:" +message.couponAmount+ "  原价:"+message.price
