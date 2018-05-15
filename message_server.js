@@ -43,10 +43,11 @@ MessageServer.getInstance = function(server) {
 MessageServer.prototype.init_io = function(server,self) {
 	self.io = socket.listen(server);
 	self.io.on('connection', function (socket) {
-		console.log('connection')
+		console.log(socket.id,'----------------connection')
 		self.sockets[socket.id] = socket;
 		// self.taobao_socket_ids.push(socket.id);
 		socket.on('disconnect', function(){
+		    console.log(socket.id,'----------------disconnect')
 		    delete self.sockets[socket.id];
 		    if(self.taobao_socket_ids.indexOf(socket.id) != -1){
                 self.taobao_socket_ids.splice(self.taobao_socket_ids.indexOf(socket.id),1)
@@ -104,7 +105,7 @@ MessageServer.prototype.init_io = function(server,self) {
                         console.log(item,'-------------item')
                         if(msg.code == self.wechat_socket_ids[item]){
                             console.log(msg.code ,'-------------equal')
-                            var url = send_conf.zhifu.replace('IMAGE',message.pictUrl).replace('WORD',message.token)
+                            var url = send_conf.zhifu.replace('IMAGE',encodeURI(message.pictUrl)).replace('WORD',encodeURI(message.token))
                             // duanlian.convert_url(url, function (data) {
                                 var str = "返利:"+message.tkCommFee+"  优惠券:" +message.couponAmount+ "  原价:"+message.price
                                     +"\r\n━┉┉┉┉∞┉┉┉┉━┉━┉━\r\n"+"点击链接查看商品\r\n" + url
