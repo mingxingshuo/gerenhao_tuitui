@@ -72,7 +72,7 @@ MessageServer.prototype.init_io = function(server,self) {
 			
             if(!msg.data) {
                 var str = "主人！！这家店铺太抠门了！没有设置优惠券和补贴！！\r\n-----------------\r\n"
-                    + "主人不妨逛逛我的优惠券网站：https://0x7.me/UOAMa\r\n"
+                    + "主人不妨逛逛我的优惠券网站：http://t.cn/R30zt2l\r\n"
                     + "点击查看更多优惠！\r\n-----------------\r\n还可以输入：搜索+商品名（例如：搜索鞋子）即可查找优惠券";
                 for (var item in self.wechat_socket_ids) {
                     if (msg.code == self.wechat_socket_ids[item]) {
