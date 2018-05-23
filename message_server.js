@@ -2,7 +2,7 @@ var socket = require('socket.io')
 var WechatAPI = require('wechat-api');
 var weichat_conf = require('./conf/weichat.json');
 var send_conf = require('./conf/sendUrl.json');
-var duanlian = require('./util/duanlian_util');
+var duanlian = require('./util/ni_duanlian_util');
 var weichat_apis ={};
 var TokenMessageModel = require('./model/TokenMessage');
 var request = require('request');
@@ -107,12 +107,12 @@ MessageServer.prototype.init_io = function(server,self) {
                         if(msg.code == self.wechat_socket_ids[item]){
                             console.log(msg.code ,'-------------equal')
                             var url = send_conf.zhifu.replace('IMAGE',encodeURI(message.pictUrl)).replace('WORD',encodeURI(message.token))
-                            // duanlian.convert_url(url, function (data) {
+                             duanlian.convert_url(url, function (data) {
                                 var str = "返利:"+message.tkCommFee+"  优惠券:" +message.couponAmount+ "  原价:"+message.price
-                                    +"\r\n━┉┉┉┉∞┉┉┉┉━┉━┉━\r\n"+"点击链接查看商品\r\n" + url
+                                    +"\r\n━┉┉┉┉∞┉┉┉┉━┉━┉━\r\n"+"点击链接查看商品\r\n" + data
                                     +"\r\n━┉┉┉┉∞┉┉┉┉━┉━┉━\r\n买完记得把订单号码发给我领取“返利”哦"
                                 self.sockets[item].emit('reciveToken',JSON.stringify({'openid':msg.openid,'str':str}));
-                            // })
+                             })
                         }
                     }
                 });

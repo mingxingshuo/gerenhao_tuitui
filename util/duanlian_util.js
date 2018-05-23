@@ -5,6 +5,8 @@ const md5=crypto.createHash("md5");
 
 const apikey='wJFEHxabmT';
 const secret='FSDxEDdnHHPRMGhbeszjGJWTymhgYejW';
+var Memcached = require('memcached');
+const memcached = new Memcached('127.0.0.1:11211');
 
 var access_token = ''
 
@@ -29,10 +31,12 @@ Date.prototype.Format = function(fmt)
 
 
 function get_access_token(next) {
-	if(access_token){
-		return next(access_token)
-	}
-	async.waterfall([
+	memcached.get('duanlian_token',function(err,token){
+		if(token){
+			console.log('memcached :'+token)
+			return next(token);
+		}
+		async.waterfall([
 			function(callback){
 				request.get('https://0x3.me/apis/authorize/getCode',function(err,response,data){
 					if(JSON.parse(data).data){
@@ -56,6 +60,8 @@ function get_access_token(next) {
 					var token_data= JSON.parse(data)
 					if(token_data.data && token_data.data.access_token){
 						access_token=token_data.data.access_token;
+						var me_time =parseInt( (token_data.data.expire_timestamp*1000-Date.now())/(1000*2) );
+						memcached.set('duanlian_token',access_token,me_time,function(err){});
 						callback(null)
 					}else{
 						callback('短链接获取access_token出错')
@@ -70,13 +76,15 @@ function get_access_token(next) {
 			}else{
 				return next(access_token)
 			}
+		});
 	});
+	
 }
 
 function convert_url(o_url,next){
 	get_access_token(function(token){
 		if(!token){
-			return next('')
+			return next(encodeURI(o_url))
 		}
 		request({
 		    url: 'https://0x3.me/apis/urls/add',
@@ -91,10 +99,11 @@ function convert_url(o_url,next){
 		    if (!error && response.statusCode == 200) {
 		    	var url_obj = JSON.parse(body);
                 console.log(url_obj,'------------------url_obj')
-                if(url_obj.data&&url_obj.data.short_url){
-		    		next(url_obj.data.short_url)
+                if(url_obj.data&&url_obj.data.detail){
+		    		next(url_obj.data.detail)
 		    	}else{
 		    		next(encodeURI(o_url))
+
 		    	}
 		    }else{
 		    	return next(encodeURI(o_url))
@@ -103,7 +112,10 @@ function convert_url(o_url,next){
 	});
 }
 
+/*
+convert_url('http://m.baidu.com/?id=1',function(url){
+	console.log(url);
+})*/
+
 module.exports.convert_url = convert_url;
-
-
 

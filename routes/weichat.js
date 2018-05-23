@@ -10,7 +10,7 @@ var weichat_conf = require('../conf/weichat.json');
 var book_wechat_conf = require('../conf/book_wechat.json');
 var taobao_conf = require('../conf/taobao.json');
 var send_conf = require('../conf/sendUrl.json');
-var duanlian = require('../util/duanlian_util');
+var duanlian = require('../util/ni_duanlian_util');
 var TaobaoUtil =require('../util/taobaoke_util.js');
 var async = require('async');
 
@@ -331,13 +331,13 @@ function getCode(openid,text,res){
 router.get('/getSearch', function(req, res) {
     var key = req.query.key;
     var url = send_conf.search.replace('KEY',encodeURIComponent(key));
-    // duanlian.convert_url(url, function (data) {
+    duanlian.convert_url(url, function (data) {
         var str = '点击下方链接查看【' + key + '】给力优惠券！\r\n'
             + '━┉┉┉┉∞┉┉┉┉━\r\n'
-            + url + '\r\n━┉┉┉┉∞┉┉┉┉━\r\n'
+            + data + '\r\n━┉┉┉┉∞┉┉┉┉━\r\n'
             + '买完记得把订单号码发给我领取“返利”哦！';
         res.send({content:str});
-    // })
+    })
 })
 
 //待开发
