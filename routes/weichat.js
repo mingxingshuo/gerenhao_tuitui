@@ -536,14 +536,14 @@ router.post('/getTaobaoke_byCode', function(req, res) {
             data.title = title;
 
             var token ='';
-			if(text.search(/￥[0-9a-zA-Z]{11}￥/)!=-1){
+			/*if(text.search(/￥[0-9a-zA-Z]{11}￥/)!=-1){
 				token = text.substr(text.search(/￥[0-9a-zA-Z]{11}￥/),13);
-			}
+			}*/
 
 			var str_url = '';
-			if(text.search('【')!=-1 && text.search('http')!=-1){
+			/*if(text.search('【')!=-1 && text.search('http')!=-1){
 				str_url = text.split('】')[1].split(' ')[0];
-			}
+			}*/
 
 			if(str_url){
 				console.log('url---------------'+str_url);
