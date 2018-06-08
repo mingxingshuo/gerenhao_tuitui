@@ -524,7 +524,7 @@ router.post('/getTaobaoke_byCode', function(req, res) {
 				if(text.search('（')!=-1){
 					title = text.split('（')[1].split('）')[0];
 				}else{
-					title = text.split('【')[1].split('】')[0];
+					title = text.substr(text.indexOf('【')+1,text.lastIndexOf('】')-1);
 				}
 			}else{
 				title = text;
@@ -536,14 +536,16 @@ router.post('/getTaobaoke_byCode', function(req, res) {
             data.title = title;
 
             var token ='';
-			/*if(text.search(/￥[0-9a-zA-Z]{11}￥/)!=-1){
-				token = text.substr(text.search(/￥[0-9a-zA-Z]{11}￥/),13);
-			}*/
+			if (text.search(/￥[0-9a-zA-Z]{11}￥/) != -1) {
+		        code = text.substr(text.search(/￥[0-9a-zA-Z]{11}￥/), 13);
+		    }else if(text.search(/€[0-9a-zA-Z]{11}€/) != -1){
+		        code = text.substr(text.search(/€[0-9a-zA-Z]{11}€/), 13);
+		    }
 
 			var str_url = '';
-			/*if(text.search('【')!=-1 && text.search('http')!=-1){
-				str_url = text.split('】')[1].split(' ')[0];
-			}*/
+			if (text.search('http') != -1) {
+		     str_url = text.substr(text.search('http')).split(' ')[0]
+		    }
 
 			if(str_url){
 				console.log('url---------------'+str_url);
@@ -558,16 +560,17 @@ router.post('/getTaobaoke_byCode', function(req, res) {
 				});	
 			}else if(token){
 				console.log('token---------------'+token);
-				TaobaoUtil.request_taobao_token(token,function(err,url){
+				/*TaobaoUtil.request_taobao_token(token,function(err,url){
 					if(err||!url){
 						MessageServer.getInstance(null).req_title_token(data);
 					}else{
 						data.title =url;
 						MessageServer.getInstance(null).req_title_token(data);
 					}
-				});
+				});*/
 			}else{
 				console.log('--------search title--------')
+				data.title = text
 				MessageServer.getInstance(null).req_title_token(data);
 			}
 
