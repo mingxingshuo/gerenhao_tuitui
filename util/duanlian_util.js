@@ -1,121 +1,51 @@
 const request = require('request');
-const async = require('async');
-const crypto=require('crypto');  
-const md5=crypto.createHash("md5");  
+const appkeys =['5786724301','2849184197','202088835','211160679','1905839263','783190658','569452181','2849184197','2702428363','82966982'] 
 
-const apikey='wJFEHxabmT';
-const secret='FSDxEDdnHHPRMGhbeszjGJWTymhgYejW';
-var Memcached = require('memcached');
-const memcached = new Memcached('127.0.0.1:11211');
-
-var access_token = ''
-
-Date.prototype.Format = function(fmt)   
-{ //author: meizz   
-  var o = {   
-    "M+" : this.getMonth()+1,                 //月份   
-    "d+" : this.getDate(),                    //日   
-    "h+" : this.getHours(),                   //小时   
-    "m+" : this.getMinutes(),                 //分   
-    "s+" : this.getSeconds(),                 //秒   
-    "q+" : Math.floor((this.getMonth()+3)/3), //季度   
-    "S"  : this.getMilliseconds()             //毫秒   
-  };   
-  if(/(y+)/.test(fmt))   
-    fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));   
-  for(var k in o)   
-    if(new RegExp("("+ k +")").test(fmt))   
-  fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));   
-  return fmt;   
-}
-
-
-function get_access_token(next) {
-	memcached.get('duanlian_token',function(err,token){
-		if(token){
-			console.log('memcached :'+token)
-			return next(token);
-		}
-		async.waterfall([
-			function(callback){
-				request.get('https://0x3.me/apis/authorize/getCode',function(err,response,data){
-					if(JSON.parse(data).data){
-						callback(null,JSON.parse(data).data);
-					}else{
-						callback('短链接获取code出错');
-					}
-				});
-			},
-			function(code,callback){
-				var formData = {
-					api_key:apikey,
-					code:code,
-					request_time:new Date().Format("yyyy-MM-dd hh:mm:ss")
-				};
-				var str = 'api_key='+formData.api_key+'code='+formData.code+'request_time='+formData.request_time+secret;
-				md5.update(str);  
-				var sign=md5.digest('hex');  
-				formData.sign = sign;
-				request.post({url:'https://0x3.me/apis/authorize/getAccessToken',formData:formData},function(err,response,data){
-					var token_data= JSON.parse(data)
-					if(token_data.data && token_data.data.access_token){
-						access_token=token_data.data.access_token;
-						var me_time =parseInt( (token_data.data.expire_timestamp*1000-Date.now())/(1000*2) );
-						memcached.set('duanlian_token',access_token,me_time,function(err){});
-						callback(null)
-					}else{
-						callback('短链接获取access_token出错')
-					}
-				});
-			},
-		],
-		function(err,result){
-			if(err){
-				console.log(err)
-				return next(access_token)
-			}else{
-				return next(access_token)
-			}
-		});
-	});
-	
-}
-
-function convert_url(o_url,next){
-	get_access_token(function(token){
-		if(!token){
-			return next(encodeURI(o_url))
-		}
-		request({
-		    url: 'https://0x3.me/apis/urls/add',
-		    method: "POST",
-		    headers: {
-		    	"Access-Token": token,
-		        "Content-Type": "application/x-www-form-urlencoded",
-		        "Cache-Control":"no-cache"
-		    },
-		    form:{longurl:o_url}
+function convert_url(url,next) {
+	var index = parseInt(Math.random()*appkeys.length);
+	var appkey = appkeys[index];
+	request({
+		    url: 'http://api.weibo.com/2/short_url/shorten.json?source='+appkey+'&url_long='+encodeURIComponent(url),
+		    method: "get",
 		}, function(error, response, body) {
+			console.log(body);
 		    if (!error && response.statusCode == 200) {
 		    	var url_obj = JSON.parse(body);
-                console.log(url_obj,'------------------url_obj')
-                if(url_obj.data&&url_obj.data.detail){
-		    		next(url_obj.data.detail)
-		    	}else{
-		    		next(encodeURI(o_url))
-
+		    	if(url_obj.error){
+		    		console.log(url_obj);
+		    		console.log('-------------');
+		    		console.log(appkey)
+		    		return next(url)
 		    	}
-		    }else{
-		    	return next(encodeURI(o_url))
+                var url_short = url_obj.urls[0].url_short;
+                if(url_short){
+                	return next(url_short)
+                }
+                return next(url)
 		    }
+		    return next(url)
 		});
-	});
 }
 
-/*
-convert_url('http://m.baidu.com/?id=1',function(url){
-	console.log(url);
-})*/
+function vilidate(url){
+	appkeys.forEach(function(appkey){
+		request({
+		    url: 'http://api.weibo.com/2/short_url/shorten.json?source='+appkey+'&url_long='+encodeURIComponent(url),
+		    method: "get",
+		}, function(error, response, body) {
+		    if (!error && response.statusCode == 200) {
+		    	var url_obj = JSON.parse(body);	
+		    		console.log(url_obj);
+		    		console.log('-------------');
+		    		console.log(appkey) 
+		    		console.log('-------------\r\n\r\n');  		   	  
+		    }
+		    
+		});
+	})
+}
+
+//vilidate('https://mingtianhuigenghao.kuaizhan.com/?image=http://img.alicdn.com/bao/uploaded/i2/2702726458/TB28HZbo4WYBuNjy1zkXXXGGpXa_!!2702726458.jpg&word=€MVsh0woKs1c€')
+
 
 module.exports.convert_url = convert_url;
-

@@ -10,7 +10,7 @@ var weichat_conf = require('../conf/weichat.json');
 var book_wechat_conf = require('../conf/book_wechat.json');
 var taobao_conf = require('../conf/taobao.json');
 var send_conf = require('../conf/sendUrl.json');
-var duanlian = require('../util/ni_duanlian_util');
+var duanlian = require('../util/duanlian_util');
 var TaobaoUtil =require('../util/taobaoke_util.js');
 var async = require('async');
 
