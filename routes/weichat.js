@@ -22,7 +22,7 @@ var BookModel = require('../model/Book.js');
 var UserBookAuthorityModel = require('../model/UserBookAuthority.js');
 var UserActionMiaoShaModel = require('../model/UserActionMiaoSha.js');
 
-var MessageServer = require('../message_server.js');
+// var MessageServer = require('../message_server.js');
 var weichat_apis ={};
 
 var Memcached = require('memcached');
@@ -551,10 +551,12 @@ router.post('/getTaobaoke_byCode', function(req, res) {
 				console.log('url---------------'+str_url);
 				TaobaoUtil.request_taobao_url(str_url,function(err,url){
 					if(err||!url){
-						MessageServer.getInstance(null).req_title_token(data);
+                        request.post('http://io.rrdtjj.top/geren_message/taobaoke',{form:data},function(err,response){
+                        })
 					}else{
 						data.title =url;
-						MessageServer.getInstance(null).req_title_token(data);
+                        request.post('http://io.rrdtjj.top/geren_message/taobaoke',{form:data},function(err,response){
+                        })
 					}
 					
 				});	
@@ -571,7 +573,8 @@ router.post('/getTaobaoke_byCode', function(req, res) {
 			}else{
 				console.log('--------search title--------')
 				data.title = text
-				MessageServer.getInstance(null).req_title_token(data);
+                request.post('http://io.rrdtjj.top/geren_message/taobaoke',{form:data},function(err,response){
+                })
 			}
 
 

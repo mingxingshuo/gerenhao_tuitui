@@ -5,7 +5,7 @@
  */
 
 var app = require('../app');
-var MessageServer = require('../message_server.js');
+// var MessageServer = require('../message_server.js');
 var debug = require('debug')('tuitui-weichat:server');
 var http = require('http');
 
@@ -27,7 +27,7 @@ var server = http.createServer(app);
  */
 
 server.listen(port);
-MessageServer.getInstance(server);
+// MessageServer.getInstance(server);
 server.on('error', onError);
 server.on('listening', onListening);
 

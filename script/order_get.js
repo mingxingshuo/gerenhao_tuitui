@@ -8,7 +8,7 @@ var WechatAPI = require('wechat-api');
 var weichat_conf = require('../conf/weichat.json');
 var weichat_apis ={};
 var async = require('async');
-var MessageServer = require('../message_server.js');
+// var MessageServer = require('../message_server.js');
 
 function next_up(_id){
 		if(_id){
@@ -45,9 +45,13 @@ function update_order(_id,next){
 														'[须知]:商品确认收货后半小时返利会添加到个人账户\r\n\r\n一一一🍉常用指令一一一\r\n'+
 														'账户信息请回复：个人信息\r\n订单查询请回复：订单\r\n余额提现请回复：提现\r\n详细教程请回复：帮助';
                                             console.log('---------------------send genzong message')
-                                            MessageServer.getInstance(null).update_order(order.openid,order.code,str,function (result) {
-                                                callback(null)
-                                            });
+                                            var data = {
+                                                openid:order.openid,
+												code:order.code,
+												str:str
+											}
+                                            request.post('http://io.rrdtjj.top/geren_message/order',{form:data},function(err,response){
+                                            })
                                         }
 									});
 								}else{
@@ -67,9 +71,13 @@ function update_order(_id,next){
 											});
                                             var str = "淘宝订单【"+taobao.order_id+"】【"+taobao.goods_info+"】" +
                                                 "已结算，返利【"+add_cash+"】元已添加到您的帐户！\r\n回复【个人信息】可以查看帐户情况！"
-                                            MessageServer.getInstance(null).update_order(order.openid,order.code,str,function (result) {
-
-                                            });
+                                            var data = {
+                                                openid:order.openid,
+                                                code:order.code,
+                                                str:str
+                                            }
+                                            request.post('http://io.rrdtjj.top/geren_message/order',{form:data},function(err,response){
+                                            })
 										}
 									});
 								}
@@ -85,9 +93,13 @@ function update_order(_id,next){
 									+ "————温馨提醒————\r\n下面三种情况会导致找不到订单：\r\n"
 									+"1.该商品在分享前已加入购物车\r\n2.该商品享受了店铺其他优惠\r\n3.下单前您没有复制我的信息"
 
-                                    MessageServer.getInstance(null).update_order(order.openid,order.code,str,function (result) {
-
-                                    });
+                                    var data = {
+                                        openid:order.openid,
+                                        code:order.code,
+                                        str:str
+                                    }
+                                    request.post('http://io.rrdtjj.top/geren_message/order',{form:data},function(err,response){
+                                    })
                                 }
                                 callback(null,null)
                             }
